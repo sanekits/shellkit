@@ -23,7 +23,7 @@ main() {
 
     echo "Entering test shell"
     cd /workspace
-    su vscode -c /bin/bash
+    su vscode  -c '/bin/bash --rcfile shellkit/docker-test-bashrc'
 }
 
 [[ -z ${sourceMe} ]] && main "$@"

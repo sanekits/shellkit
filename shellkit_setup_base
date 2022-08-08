@@ -1,10 +1,10 @@
+#!/bin/bash
 # shellkit/shellkit_setup_base
 # Source this.
 
 [[ -z $Scriptdir ]] && die "\$Scriptdir not defined"
-read Kitname _ < ${Scriptdir}/Kitname
+read Kitname _ < "${Scriptdir}/../Kitname"
 [[ -z $Kitname ]] && die "\$Kitname not defined"
-
 
 inode() {
     # Returns inode of $1
@@ -16,8 +16,8 @@ is_on_path() {
     local tgt_dir="$1"
     [[ -z $tgt_dir ]] && { true; return; }
     local vv=( $(echo "${PATH}" | tr ':' '\n') )
-    for v in ${vv[@]}; do
-        if [[ $tgt_dir == $v ]]; then
+    for v in "${vv[@]}"; do
+        if [[ $tgt_dir == "$v" ]]; then
             return
         fi
     done
@@ -27,17 +27,19 @@ is_on_path() {
 path_fixup_local_bin() {
     # Add ~/.local/bin to the PATH if it's not already.  Modify
     # either .bash_profile or .profile honoring bash startup rules.
-    local kitname="${1:-shellkit}"
+    local kitname="${1}"
+    [[ -z $kitname ]] && kitname="shellkit"
     (
         builtin cd
         semaphore=.local/bin/_semaphore_$$
         echo "#!/bin/sh" $'\n' "true" > "${semaphore}"
         command chmod +x "${semaphore}"
-        command bash -l -c "cd; ${semaphore}"
-        [[ $? -ne 0 ]] && exit 1  # .local/bin is not on the PATH
-        rm $semaphore
+        if ! command bash -l -c "cd; ${semaphore}"; then
+            exit 1  # .local/bin is not on the PATH
+        fi
+        rm ${semaphore}
         true
-    ) && { true; return }
+    ) && { true; return; }
     (
         local profile=.bash_profile
         [[ -f $profile ]] || profile=.profile
@@ -47,6 +49,7 @@ path_fixup_local_bin() {
         mv $tmp_profile $profile || die 203
         echo "WARNING: ~/.local/bin was added to your PATH by modifying ${PWD}/${profile}.  It is up to you to ensure that the contents of ~/.local/bin are benign!" >&2
     )
+
     reload_reqd=true
 }
 
@@ -55,8 +58,7 @@ shrc_fixup() {
     (
         # Each kit defines a [Kitname]-semaphore function which just prints '1'
         /bin/bash -l -c "type -f ${Kitname}-semaphore >/dev/null"
-    ) &>/dev/null
-    [[ $? -eq 0 ]] && {
+    ) &>/dev/null && {
         return
     }
 
@@ -64,5 +66,7 @@ shrc_fixup() {
         echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"
         echo
     ) >> ${HOME}/.bashrc
+
     reload_reqd=true
 }
+

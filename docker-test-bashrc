@@ -1,0 +1,9 @@
+# docker-test-bashrc
+# Used when running docker-test.sh
+
+set -o vi
+# disable flow control for terminal:
+/bin/stty -ixon -ixoff 2>/dev/null
+alias lr='command ls -lirta'
+source ~/.bashrc
+

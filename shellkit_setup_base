@@ -1,7 +1,6 @@
 # shellkit/shellkit_setup_base
 # Source this.
 
-reload_reqd=${reload_reqd:-true}
 [[ -z $Scriptdir ]] && die "\$Scriptdir not defined"
 read Kitname _ < ${Scriptdir}/Kitname
 [[ -z $Kitname ]] && die "\$Kitname not defined"
@@ -48,5 +47,22 @@ path_fixup_local_bin() {
         mv $tmp_profile $profile || die 203
         echo "WARNING: ~/.local/bin was added to your PATH by modifying ${PWD}/${profile}.  It is up to you to ensure that the contents of ~/.local/bin are benign!" >&2
     )
+    reload_reqd=true
+}
+
+shrc_fixup() {
+    # We must ensure that .bashrc sources our ps1-foo.bashrc script
+    (
+        # Each kit defines a [Kitname]-semaphore function which just prints '1'
+        /bin/bash -l -c "type -f ${Kitname}-semaphore >/dev/null"
+    ) &>/dev/null
+    [[ $? -eq 0 ]] && {
+        return
+    }
+
+    ( # Add hook to .bashrc
+        echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"
+        echo
+    ) >> ${HOME}/.bashrc
     reload_reqd=true
 }

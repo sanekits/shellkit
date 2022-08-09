@@ -1,5 +1,5 @@
 #!/bin/bash
-# setup.sh for ps1-foo
+# setup.sh for shellkit
 
 die() {
     echo "ERROR: $@" >&2
@@ -7,6 +7,7 @@ die() {
 }
 
 canonpath() {
+    # Like "readlink -f", but portable
     ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
 }
 

@@ -3,7 +3,7 @@
 # Source this.
 
 [[ -z $Scriptdir ]] && die "\$Scriptdir not defined"
-read Kitname _ < "${Scriptdir}/../Kitname"
+read Kitname _ < "${Scriptdir}/Kitname"
 [[ -z $Kitname ]] && die "\$Kitname not defined"
 
 inode() {

@@ -15,5 +15,5 @@ Scriptdir=$(dirname -- "$Script")
 
 cd ${Scriptdir}/..
 
-docker run -v $PWD:/workspace --rm -it debian bash -c /workspace/shellkit/docker_testenv.sh
+docker run -v $PWD:/workspace --rm -it debian bash -c /workspace/shellkit/docker_testenv.sh || die "docker_testenv.sh returned failure"
 

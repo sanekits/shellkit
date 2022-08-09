@@ -7,3 +7,5 @@ set -o vi
 alias lr='command ls -lirta'
 source ~/.bashrc
 
+echo "pwd=$(pwd -P)"
+echo "Manually test, then use 'echo 0' or 'echo 1' to assign test result"

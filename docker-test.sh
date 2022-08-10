@@ -15,5 +15,19 @@ Scriptdir=$(dirname -- "$Script")
 
 cd ${Scriptdir}/..
 
-docker run -v $PWD:/workspace --rm -it debian bash -c /workspace/shellkit/docker_testenv.sh || die "docker_testenv.sh returned failure"
+getMounts() {
+    echo "-v $PWD:/workspace -v ${HOME}:/host_home:ro"
+}
+getBaseImage() {
+    echo "debian"
+}
+
+getInnerArgs() {
+    echo "--user vscode --login"
+}
+getInnerCmdline() {
+    echo "/workspace/shellkit/docker_testenv.sh $(getInnerArgs)"
+}
+
+docker run $(getMounts) --rm -it --name docker-test-$$ "$(getBaseImage)" bash -c "$(getInnerCmdline)" || die "docker_testenv.sh returned failure"
 

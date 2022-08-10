@@ -6,24 +6,54 @@ die() {
     exit 1
 }
 
-nonroot_user=vscode
+nonroot_user=vscode  # Create this nonroot user (--user [name])
+do_login=false # Login as nonroot_user?  (--login cmdline option)
 
 make_nonroot_user() {
     [[ $UID == 0 ]] || return
-    su vscode bash true
-    adduser --uid 1000 vscode --gecos "" --disabled-password
-    echo "User vscode created"
+    #su vscode bash true
+    adduser --uid 1000 $nonroot_user --gecos "" --disabled-password
+    echo "User $nonroot_user created"
+}
 
+install_requirements() {
+    apt-get update || die apt-get update failed
+    apt-get install -y vim-tiny
+}
+
+parse_args() {
+    while [[ -n $1 ]]; do
+        case $1 in
+            --user)
+                nonroot_user=$2
+                shift
+                ;;
+            --login)
+                do_login=true
+                ;;
+        esac
+        shift
+    done
+    set +x
 }
 
 main() {
     echo "docker_testenv.sh args:[$*]"
 
+    set -x
+    parse_args "$@"
+    set +x
     make_nonroot_user
+    install_requirements
 
     echo "Entering test shell"
     cd /workspace
-    su vscode  -c '/bin/bash --rcfile shellkit/docker-test-bashrc'
+    set -x
+    if $do_login; then
+        su vscode  -c '/bin/bash --rcfile shellkit/docker-test-bashrc'
+    else
+        /bin/bash --rcfile shellkit/docker-test-bashrc
+    fi
 }
 
 [[ -z ${sourceMe} ]] && main "$@"

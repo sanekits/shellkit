@@ -57,7 +57,7 @@ shrc_fixup() {
     # We must ensure that .bashrc sources our ps1-foo.bashrc script
     (
         # Each kit defines a [Kitname]-semaphore function which just prints '1'
-        /bin/bash -l -c "type -f ${Kitname}-semaphore >/dev/null"
+        /bin/bash -l -c "type -t ${Kitname}-semaphore >/dev/null"
     ) &>/dev/null && {
         return
     }

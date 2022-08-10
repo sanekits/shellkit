@@ -8,7 +8,7 @@ die() {
 
 canonpath() {
     # Like "readlink -f", but portable
-    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+    ( cd -L -- "$(command dirname -- ${1})"; echo "$(command pwd -P)/$(command basename -- ${1})" )
 }
 
 Script=$(canonpath "$0")

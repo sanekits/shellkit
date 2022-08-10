@@ -1,19 +1,37 @@
 #!/bin/bash
 # publish/publish-via-github-release.sh
 
+canonpath() {
+    # Like "readlink -f", but portable
+    ( cd -L -- "$(command dirname -- ${1})"; echo "$(command pwd -P)/$(command basename -- ${1})" )
+}
 
-Script=$(command readlink -f $0)
-Scriptdir=$(command dirname $Script)
-Kitname=$(cat $(readlink -f ${Scriptdir}/../bin/Kitname))
+Script=$(canonpath "$0")
+Scriptdir=$(command dirname "$Script")
+
+Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
 
 
 die() {
-    builtin echo "ERROR: $@" >&2
+    builtin echo "ERROR: $*" >&2
     builtin exit 1
 }
 
+checkTag() {
+    # verify existence of local tag matching version
+    local version=$1
+    [[ -z $version ]] && die "No version passed to checkTag"
+
+    version="${version//./\~}"
+    command git tag | command sed 's/\./~/g' | command grep "${version}" || {
+        builtin echo "No git tag with version $1" >&2
+        false
+        return
+    }
+    true
+}
+
 if [[ -z $sourceMe ]]; then
-    [[ -n $Kitname ]] || die 99
     builtin cd ${Scriptdir}/../bin || die 100
     if [[ $( command git status -s .. | command wc -l 2>/dev/null) -gt 0 ]]; then
         die "One or more files in $PWD need to be committed before publish"
@@ -22,6 +40,7 @@ if [[ -z $sourceMe ]]; then
     builtin cd ${Scriptdir}/.. || die 101
     version=$( bin/${Kitname}-version.sh | cut -f2)
     [[ -z $version ]] && die 103
+    checkTag  ${version} || die 103.4
 
     command mkdir -p ./tmp
 

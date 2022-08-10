@@ -2,8 +2,8 @@
 # shellkit/shellkit_setup_base
 # Source this.
 
-[[ -z $Scriptdir ]] && die "\$Scriptdir not defined"
-read Kitname _ < "${Scriptdir}/Kitname"
+[[ -z $scriptDir ]] && die "\$scriptDir not defined"
+read Kitname _ < "${scriptDir}/Kitname"
 [[ -z $Kitname ]] && die "\$Kitname not defined"
 
 inode() {

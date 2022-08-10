@@ -16,6 +16,7 @@ reload_reqd=false
 source ${scriptDir}/shellkit/shellkit_setup_base || die Failed sourcing shellkit_base
 
 main_base() {
+    [[ -z $Script ]] && die "\$Script not defined in main_base()"
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
         if [[ -e $HOME/.local/bin/${Kitname} ]]; then
             die "$HOME/.local/bin/${Kitname} exists but is not a directory.  Refusing to overwrite"
@@ -26,14 +27,12 @@ main_base() {
         die "cannot run setup.sh from ${HOME}/.local/bin"
     fi
     builtin cd ${HOME}/.local/bin/${Kitname} || die "101"
-    set -x
     command rm -rf ./* || die "102"
     [[ -d ${scriptDir} ]] || die "bad scriptDir [$scriptDir]"
     command cp -r ${scriptDir}/* ./ || die "failed copying from ${scriptDir} to $PWD"
     builtin cd .. # Now were in .local/bin
-    command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "101.5"
-    command ln -sf ./${Kitname}/parse_ps1_host_suffix.sh ./ || die "101.6"
-    path_fixup_local_bin ${Kitname} || die "102"
+    command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "102.2"
+    path_fixup_local_bin ${Kitname} || die "102.5"
     shrc_fixup || die "104"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2
 }

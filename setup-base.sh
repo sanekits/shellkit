@@ -24,6 +24,12 @@ main_base() {
         command mkdir -p $HOME/.local/bin/${Kitname} || die "Failed creating $HOME/.local/bin/${Kitname}"
     fi
     if [[ $(inode $Script) -eq $(inode ${HOME}/.local/bin/${Kitname}/setup.sh) ]]; then
+        # Note: shellkit is designed to be re-installable from the original ~/.local/bin/ CONTENT,
+        # but not from within the original LOCATION.  In other words, you can do a `cp -r ~/.local/bin/{kitname} /tmp/{kitname}`,
+        # and then run setup.sh from /tmp/{kitname}.  That's OK, and setup will overwrite the original
+        # stuff in ~/.local/bin.  But you can't just run setup.sh from ~/.local/bin/{kitname}.  This prevents
+        # weird mistakes, but allows (for example) the kit to be mounted in a docker /host_home and installed
+        # into the container
         die "cannot run setup.sh from ${HOME}/.local/bin"
     fi
     builtin cd ${HOME}/.local/bin/${Kitname} || die "101"

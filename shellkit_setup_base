@@ -55,12 +55,10 @@ path_fixup_local_bin() {
 
 shrc_fixup() {
     # We must ensure that .bashrc sources our ps1-foo.bashrc script
-    (
-        # Each kit defines a [Kitname]-semaphore function which just prints '1'
-        /bin/bash -l -c "type -t ${Kitname}-semaphore >/dev/null"
-    ) &>/dev/null && {
+    local xtype=$( /bin/bash -l -c "PS1=1; source ~/.bashrc; type -t ${Kitname}-semaphore" )
+    if [[ "${xtype}" == *function* ]]; then
         return
-    }
+    fi
 
     ( # Add hook to .bashrc
         echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"

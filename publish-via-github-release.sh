@@ -11,7 +11,6 @@ Scriptdir=$(command dirname "$Script")
 
 Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
 
-
 die() {
     builtin echo "ERROR: $*" >&2
     builtin exit 1
@@ -32,12 +31,13 @@ checkTag() {
 }
 
 if [[ -z $sourceMe ]]; then
-    builtin cd ${Scriptdir}/../bin || die 100
+    [[ -n $Kitname ]] || die 99
+    builtin cd ${scriptDir}/../bin || die 100
     if [[ $( command git status -s .. | command wc -l 2>/dev/null) -gt 0 ]]; then
         die "One or more files in $PWD need to be committed before publish"
     fi
     command git rev-parse HEAD > ./hashfile || die 104
-    builtin cd ${Scriptdir}/.. || die 101
+    builtin cd ${scriptDir}/.. || die 101
     version=$( bin/${Kitname}-version.sh | cut -f2)
     [[ -z $version ]] && die 103
     checkTag  ${version} || die 103.4

@@ -19,12 +19,14 @@ main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
         if [[ -e $HOME/.local/bin/${Kitname} ]]; then
+            # Here we're protecting the kit maintainer: if they replace the ~/.local/bin/{kitname} dir
+            # with a symlink, we're hands-off and won't overwrite the content.
             die "$HOME/.local/bin/${Kitname} exists but is not a directory.  Refusing to overwrite"
         fi
         command mkdir -p $HOME/.local/bin/${Kitname} || die "Failed creating $HOME/.local/bin/${Kitname}"
     fi
     if [[ $(inode $Script) -eq $(inode ${HOME}/.local/bin/${Kitname}/setup.sh) ]]; then
-        # Note: shellkit is designed to be re-installable from the original ~/.local/bin/ CONTENT,
+        # shellkit is designed to be re-installable from the original ~/.local/bin/ CONTENT,
         # but not from within the original LOCATION.  In other words, you can do a `cp -r ~/.local/bin/{kitname} /tmp/{kitname}`,
         # and then run setup.sh from /tmp/{kitname}.  That's OK, and setup will overwrite the original
         # stuff in ~/.local/bin.  But you can't just run setup.sh from ~/.local/bin/{kitname}.  This prevents

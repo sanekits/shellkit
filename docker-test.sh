@@ -42,5 +42,5 @@ getInnerCmdline() {
 }
 
 echo "Current dir: $(pwd -P)"
-docker run $(getMounts) --rm -it $(getEnvironment) --name docker-test-$$ "$(getBaseImage)" bash -c "$(getInnerCmdline)" || die "docker_testenv.sh returned failure"
+docker run $(getMounts) --rm --init -it $(getEnvironment) --name docker-test-$$ "$(getBaseImage)" bash -c "$(getInnerCmdline)" || die "docker_testenv.sh returned failure"
 

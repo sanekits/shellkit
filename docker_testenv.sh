@@ -47,21 +47,17 @@ parse_args() {
         esac
         shift
     done
-    set +x
 }
 
 main() {
     echo "docker_testenv.sh args:[$*]"
 
-    set -x
     parse_args "$@"
-    set +x
     make_nonroot_user
     install_requirements
 
     echo "Entering test shell"
     cd /workspace
-    set -x
     if $do_login; then
         su vscode  -c '/bin/bash --rcfile shellkit/docker-test-bashrc'
     else

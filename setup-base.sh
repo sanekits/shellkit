@@ -13,7 +13,80 @@ canonpath() {
 
 reload_reqd=false
 
-source ${scriptDir}/shellkit/shellkit_setup_base || die Failed sourcing shellkit_base
+[[ -z $scriptDir ]] && die "\$scriptDir not defined"
+read Kitname _ < "${scriptDir}/Kitname"
+[[ -z $Kitname ]] && die "\$Kitname not defined"
+
+inode() {
+    # Returns inode of $1
+    ( command ls -i "$1" | command awk '{print $1}') 2>/dev/null
+}
+
+is_on_path() {
+    # Return true if $1 is on the PATH
+    local tgt_dir="$1"
+    [[ -z $tgt_dir ]] && { true; return; }
+    local vv=( $(echo "${PATH}" | tr ':' '\n') )
+    for v in "${vv[@]}"; do
+        if [[ $tgt_dir == "$v" ]]; then
+            return
+        fi
+    done
+    false
+}
+
+localbin_semaphore() {
+    cat <<-EOF
+#!/bin/sh
+true
+EOF
+}
+
+path_fixup_local_bin() {
+    # Add ~/.local/bin to the PATH if it's not already.  Modify
+    # either .bash_profile or .profile honoring bash startup rules.
+    local kitname="${1}"
+    [[ -z $kitname ]] && kitname="shellkit"
+    ( # Create a semaphore script in ~/.local/bin.  If we can run it without specifying path, we're good.
+        builtin cd
+        semaphore=_semaphore_$$
+        localbin_semaphore > ~/.local/bin/${semaphore}
+        command chmod +x ~/.local/bin/${semaphore}
+        if ! command bash -l -c "${semaphore}"; then
+            exit 1  # .local/bin is not on the PATH
+        fi
+        rm ~/.local/bin/${semaphore}
+        true
+    ) && { true; return; }
+    echo "~/.local/bin is not on the path. Fixing profile." >&2
+    (
+        local profile=.bash_profile
+        [[ -f ~/${profile} ]] || profile=.profile
+        tmp_profile="profile-tmp.$$"
+        echo "export PATH=\${HOME}/.local/bin:\$PATH # Added by ${kitname}" > "${tmp_profile}" || die 202
+        [[ -e ~/${profile} ]] && cat ~/${profile} >> "${tmp_profile}"
+        mv "$tmp_profile" ~/${profile} || die 203
+        echo "WARNING: ~/.local/bin was added to your PATH by modifying ${PWD}/${profile}.  It is up to you to ensure that the contents of ~/.local/bin are benign!" >&2
+    )
+
+    reload_reqd=true
+}
+
+shrc_fixup() {
+    # We must ensure that .bashrc sources our ps1-foo.bashrc script
+    local xtype=$( /bin/bash -l -c "PS1=1; source ~/.bashrc; type -t ${Kitname}-semaphore" )
+    if [[ "${xtype}" == *function* ]]; then
+        return
+    fi
+
+    ( # Add hook to .bashrc
+        echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"
+        echo
+    ) >> ${HOME}/.bashrc
+
+    reload_reqd=true
+}
+
 
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"

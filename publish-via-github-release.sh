@@ -33,9 +33,11 @@ checkTag() {
 if [[ -z $sourceMe ]]; then
     [[ -n $Kitname ]] || die 99
     builtin cd ${Scriptdir}/../bin || die 100
-    if [[ $( command git status -s .. | command wc -l 2>/dev/null) -gt 0 ]]; then
-        die "One or more files in $PWD need to be committed before publish"
-    fi
+    [[ -z $rawPublish ]] && {
+            if [[ $( command git status -s .. | command wc -l 2>/dev/null) -gt 0 ]]; then
+            die "One or more files in $PWD need to be committed before publish"
+        fi
+    }
     command git rev-parse HEAD > ./hashfile || die 104
     builtin cd ${Scriptdir}/.. || die 101
     version=$( bin/${Kitname}-version.sh | cut -f2)

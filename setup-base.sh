@@ -1,6 +1,7 @@
 #!/bin/bash
 # setup-base.sh for shellkit.  Source this from the kit's own setup.sh
 
+set -x
 die() {
     echo "ERROR: $@" >&2
     exit 1

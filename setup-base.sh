@@ -1,5 +1,5 @@
 #!/bin/bash
-# setup-base.sh for shellkit
+# setup-base.sh for shellkit.  Source this from the kit's own setup.sh
 
 die() {
     echo "ERROR: $@" >&2
@@ -13,7 +13,7 @@ canonpath() {
 
 reload_reqd=false
 
-[[ -z $scriptDir ]] && die "\$scriptDir not defined"
+[[ -z $scriptDir ]] && die "\$scriptDir not defined. This must be set by outer script"
 read Kitname _ < "${scriptDir}/Kitname"
 [[ -z $Kitname ]] && die "\$Kitname not defined"
 
@@ -73,7 +73,8 @@ path_fixup_local_bin() {
 }
 
 shrc_fixup() {
-    # We must ensure that .bashrc sources our ps1-foo.bashrc script
+    # We must ensure that ~/.bashrc sources our [Kitname].bashrc script exactly once.
+    # This depends on ${Kitname}-semaphore() being a defined function in the ${Kitname}.bashrc script
     local xtype=$( /bin/bash -l -c "PS1=1; source ~/.bashrc; type -t ${Kitname}-semaphore" )
     if [[ "${xtype}" == *function* ]]; then
         return

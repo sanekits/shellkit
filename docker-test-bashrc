@@ -7,5 +7,10 @@ set -o vi
 alias lr='command ls -lirta'
 source ~/.bashrc
 
+[[ -n $TEST_DIR ]] && [[ -n $INNER_TEST_SCRIPT ]] && {
+    echo "${TEST_DIR}/${INNER_TEST_SCRIPT} startup:" >&2
+    ${TEST_DIR}/${INNER_TEST_SCRIPT}
+    exit
+}
 echo "pwd=$(pwd -P)"
 echo "Manually test, then use 'echo 0' or 'echo 1' to assign test result"

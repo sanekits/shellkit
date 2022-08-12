@@ -1,7 +1,7 @@
 #!/bin/bash
 # setup-base.sh for shellkit.  Source this from the kit's own setup.sh
 
-set -x
+
 die() {
     echo "ERROR: $@" >&2
     exit 1
@@ -88,6 +88,7 @@ shrc_fixup() {
 
     reload_reqd=true
 }
+
 install_symlinks() {
     # When:
     #   pwd=~/.local/bin
@@ -96,10 +97,10 @@ install_symlinks() {
     # Then:
     #   make symlink in . for each name in ${Kitname}/_symlinks_
     [[ -f ./${Kitname}/_symlinks_ ]] || { true; return; }
-    builtin read -a < $( command cat ${scriptDir}/_symlinks_ | grep -Ev '^#' | command tr '\n' ' ' )
-    for item in ${_symlinks[*]}; do
-        ln -sf ${Kitname}/${item} ./$(basename -- ${item}
-        echo "Symlink installed for: ${item}"
+    builtin read -a symlinks < <( command grep -Ev '^#' ./${Kitname}/_symlinks_ | command tr '\n' ' ' )
+    for item in ${symlinks[*]}; do
+        command ln -sf ${Kitname}/${item} "./$(basename -- ${item})"
+        #echo "Symlink installed for: ${item}"
     done
 }
 

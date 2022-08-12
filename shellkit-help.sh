@@ -73,9 +73,27 @@ parse_help_from_symlinks_() {
     done < ./_symlinks_
 }
 
+set_kitname() {
+    # When:
+    #   $scriptDir is set and is a child of the kit's working tree
+    #   Kitname exists for current dir or parent
+    # Then:
+    #   Set $Kitname from ./Kitname contents
+    [[ -d $scriptDir ]] || return
+    [[ -f ${scriptDir}/Kitname ]] && { read Kitname < ${scriptDir}/Kitname; return; }
+    [[ -f ${scriptDir}/../Kitname ]] && { read Kitname < ${scriptDir}/../Kitname; return; }
+    false
+}
+
 main() {
+    set_kitname
     parse_help_from_scripts "$@"
-    parse_help_from_symlinks_
+    [[ -f ~/.local/bin/${Kitname}/_symlinks_ ]] && {
+        (
+            cd ~/.local/bin/${Kitname}
+            Kitname=${Kitname} parse_help_from_symlinks_
+        )
+    }
 }
 
 [[ -z ${sourceMe} ]] && main "$@"

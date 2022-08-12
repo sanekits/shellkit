@@ -30,13 +30,52 @@ parse_help_items() {
 
 }
 
-main() {
-    # Each arg is a file with help items
+parse_help_from_scripts() {
+    # Each arg is a file, potentially with help items
     for arg; do
         [[ -f ${arg} ]] && {
             cat ${arg} | parse_help_items
         }
     done
+}
+
+parse_help_from_symlinks_() {
+    # When:
+    #    ${Kitname} is defined
+    #    $./_symlinks_ exists
+    # Then:
+    #   - Read help specs from comments after each symlink name
+    #   - Match instruction patterns:
+    #      <symlink-name> #help <help text>
+    #         (print <help text>)
+    #      <symlink-name> #help@ <command text>
+    #         (Run  command after #help@.  CWD is ~/.local/bin and <symlink-name>
+    #          is $SHELLKIT_HELP_SYMBOL).  A typical command would output info
+    #          to stdout, e.g.:
+    #             git-foo-stuff #help@ $SHELLKIT_HELP_SYMBOL --help
+    #
+    [[ -f ./_symlinks_ ]] || return
+    [[ -n "${Kitname}" ]] || return
+    while read SHELLKIT_HELP_SYMBOL parsekey text; do
+        case "$parsekey" in
+            '#help@')
+                export SHELLKIT_HELP_SYMBOL
+                echo "${SHELLKIT_HELP_SYMBOL}:"
+                (
+                    cd ~/.local/bin
+                    eval "${text}"
+                ) 2>&1 | command fold -s | command sed 's/^/   /'
+                ;;
+            '#help')
+                echo -e "${SHELLKIT_HELP_SYMBOL}\t${text}"
+                ;;
+        esac
+    done < ./_symlinks_
+}
+
+main() {
+    parse_help_from_scripts "$@"
+    parse_help_from_symlinks_
 }
 
 [[ -z ${sourceMe} ]] && main "$@"

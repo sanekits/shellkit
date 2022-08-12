@@ -99,7 +99,7 @@ install_symlinks() {
     [[ -f ./${Kitname}/_symlinks_ ]] || { true; return; }
     builtin read -a symlinks < <( command sed -e 's/#.*//'  ./${Kitname}/_symlinks_ | command tr '\n' ' ' )
     for item in ${symlinks[*]}; do
-        command ln -sf ${Kitname}/${item} "./$(basename -- ${item})"
+        command ln -sf ${Kitname}/${item} "./$(basename -- ${item})" || die "Failed installing symlink ${item}"
         #echo "Symlink installed for: ${item}"
     done
 }

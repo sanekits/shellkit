@@ -88,7 +88,20 @@ shrc_fixup() {
 
     reload_reqd=true
 }
-
+install_symlinks() {
+    # When:
+    #   pwd=~/.local/bin
+    #   and ${Kitname} is defined
+    #   and ./${Kitname}/_symlinks_ exists
+    # Then:
+    #   make symlink in . for each name in ${Kitname}/_symlinks_
+    [[ -f ./${Kitname}/_symlinks_ ]] || { true; return; }
+    builtin read -a < $( command cat ${scriptDir}/_symlinks_ | grep -Ev '^#' | command tr '\n' ' ' )
+    for item in ${_symlinks[*]}; do
+        ln -sf ${Kitname}/${item} ./$(basename -- ${item}
+        echo "Symlink installed for: ${item}"
+    done
+}
 
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
@@ -117,6 +130,7 @@ main_base() {
     command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "102.2"
     path_fixup_local_bin ${Kitname} || die "102.5"
     shrc_fixup || die "104"
+    install_symlinks || die "105"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2
 }
 

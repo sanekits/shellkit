@@ -97,7 +97,7 @@ install_symlinks() {
     # Then:
     #   make symlink in . for each name in ${Kitname}/_symlinks_
     [[ -f ./${Kitname}/_symlinks_ ]] || { true; return; }
-    builtin read -a symlinks < <( command grep -Ev '^#' ./${Kitname}/_symlinks_ | command tr '\n' ' ' )
+    builtin read -a symlinks < <( command sed -e 's/#.*//'  ./${Kitname}/_symlinks_ | command tr '\n' ' ' )
     for item in ${symlinks[*]}; do
         command ln -sf ${Kitname}/${item} "./$(basename -- ${item})"
         #echo "Symlink installed for: ${item}"

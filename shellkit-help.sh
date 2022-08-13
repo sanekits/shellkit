@@ -1,8 +1,13 @@
 #!/bin/bash
 # shellkit-help.sh
 
+
 canonpath() {
-    # Like "readlink -f", but portable
+    type -t realpath.sh &>/dev/null && {
+        realpath.sh "$@"
+        return
+    }
+    # Ok for rough work only.  Prefer realpath.sh if it's on the path.
     ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
 }
 

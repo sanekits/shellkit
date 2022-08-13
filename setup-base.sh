@@ -108,6 +108,43 @@ install_symlinks() {
     done
 }
 
+version_lt() {
+    # Returns true if left < right for 3-tuple version numbers
+    (
+        IFS="." read  l0 l1 l2 <<< "$1"
+        IFS="." read  r0 r1 r2 <<< "$2"
+        (( $l0 < $r0 )) && exit
+        (( $l0 == $r0 )) || exit
+        (( $l1 < $r1 )) && exit
+        (( $l1 == $r1 )) || exit
+        (( $l2 < $r2 )) && exit
+        false
+    )
+}
+
+install_realpath_sh() {
+    # When:
+    #   pwd=~/.local/bin
+    #   and ${Kitname} is defined
+    #   and ${Kitname}/shellkit/realpath.sh exists
+    #   and ./realpath.sh !exists OR ./realpath.sh is lower version
+    # Then:
+    #   copy ${Kitname}/shellkit/realpath.sh to ./realpath.sh
+    local ourVers="$( ${Kitname}/shellkit/realpath.sh --version )"
+    [[ -n $ourVers ]] || return $(die "Failed testing realpath.sh version in kit")
+    [[ -f ./realpath.sh ]] && {
+        # Is the installed version > our version?
+        local installedVers="$( ./realpath.sh --version )"
+        [[ -n "$installedVers" ]] && {
+            if version_lt "$ourVers" "$installedVers"; then
+                echo "Installed version of realpath.sh is newer than ours, skipping."
+                return
+            fi
+        }
+    }
+    command cp ${Kitname}/shellkit/realpath.sh ./realpath.sh || die "Failed installing realpath.sh"
+}
+
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
@@ -135,7 +172,9 @@ main_base() {
     command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "102.2"
     path_fixup_local_bin ${Kitname} || die "102.5"
     shrc_fixup || die "104"
+    install_realpath_sh || die "104.5"
     install_symlinks || die "105"
+    echo "${Kitname} installed in ~/.local/bin: OK"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2
 }
 

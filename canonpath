@@ -11,6 +11,7 @@ canonpath() {
         return
     }
     # Arg is not a dir
+    local xdir=$(dirname -- "$1")
     (
         cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
 }

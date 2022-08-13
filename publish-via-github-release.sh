@@ -11,13 +11,13 @@ canonpath() {
         return
     }
     # Ok for rough work only.  Prefer realpath.sh if it's on the path.
-    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+    ( cd -L -- "$(dirname -- $1)"; echo "$(pwd -P)/$(basename -- $1)" )
 }
 
 Script=$(canonpath "$0")
 Scriptdir=$(command dirname "$Script")
 
-stub Script=${Script} Scriptdir=${Scriptdir}
+#stub Script=${Script} Scriptdir=${Scriptdir}
 Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
 
 die() {

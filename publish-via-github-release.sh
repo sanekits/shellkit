@@ -1,10 +1,13 @@
 #!/bin/bash
 # publish/publish-via-github-release.sh
 
+stub() {
+   builtin echo "  <<< STUB[$*] >>> " >&2
+}
 
 canonpath() {
     type -t realpath.sh &>/dev/null && {
-        realpath.sh "$@"
+        realpath.sh -f "$@"
         return
     }
     # Ok for rough work only.  Prefer realpath.sh if it's on the path.
@@ -14,6 +17,7 @@ canonpath() {
 Script=$(canonpath "$0")
 Scriptdir=$(command dirname "$Script")
 
+stub Script=${Script} Scriptdir=${Scriptdir}
 Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
 
 die() {

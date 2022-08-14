@@ -28,6 +28,7 @@ cd ${Scriptdir}/..
 getMounts() {
     builtin echo -n "-v $PWD:/workspace -v ${HOME}:/host_home:ro "
     [[ -d $TEST_DIR ]] && builtin echo -n " -v ${TEST_DIR}:/test_dir:ro"
+    [[ -d ${HOME}/downloads ]] && builtin echo -n " -v ${HOME}/downloads:/downloads:ro"
 }
 getBaseImage() {
     if [[ -z https_proxy ]]; then

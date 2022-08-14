@@ -45,7 +45,7 @@ make_nonroot_user() {
 
 install_requirements() {
     apt-get update || die apt-get update failed
-    apt-get install -y vim-tiny
+    apt-get install -y vim-tiny curl
     [[ -f ${TEST_DIR}/container_prep.sh ]] && {
         echo "Running ${TEST_DIR}/container_prep.sh:"
         ${TEST_DIR}/container_prep.sh || die "Failed container_prep.sh"

@@ -31,11 +31,13 @@ getMounts() {
     [[ -d ${HOME}/downloads ]] && builtin echo -n " -v ${HOME}/downloads:/downloads:ro"
 }
 getBaseImage() {
-    if [[ -z https_proxy ]]; then
-        echo "debian:latest"
+    set -x
+    if [[ -z $https_proxy ]]; then
+        echo "debian-current"  # Update with:  docker pull debian-latest && docker tag [hash] debian-current
     else
         docker image ls | grep -E "^.*dpkg-python-development-base\s*3.8" | awk '{print $1 ":" $2}'
     fi
+    set +x
 }
 
 getInnerArgs() {
@@ -54,5 +56,6 @@ getInnerCmdline() {
 }
 
 echo "Current dir: $(pwd -P)"
+
 docker run $(getMounts) --rm --init -it $(getEnvironment) --name docker-test-$$ "$(getBaseImage)" bash -c "$(getInnerCmdline)" || die "docker_testenv.sh returned failure"
 

@@ -1,14 +1,23 @@
 #!/bin/bash
 # publish/publish-via-github-release.sh
 
+stub() {
+   builtin echo "  <<< STUB[$*] >>> " >&2
+}
+
 canonpath() {
-    # Like "readlink -f", but portable
-    ( cd -L -- "$(command dirname -- ${1})"; echo "$(command pwd -P)/$(command basename -- ${1})" )
+    type -t realpath.sh &>/dev/null && {
+        realpath.sh -f "$@"
+        return
+    }
+    # Ok for rough work only.  Prefer realpath.sh if it's on the path.
+    ( cd -L -- "$(dirname -- $1)"; echo "$(pwd -P)/$(basename -- $1)" )
 }
 
 Script=$(canonpath "$0")
 Scriptdir=$(command dirname "$Script")
 
+#stub Script=${Script} Scriptdir=${Scriptdir}
 Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
 
 die() {
@@ -47,7 +56,7 @@ if [[ -z $sourceMe ]]; then
     command mkdir -p ./tmp
 
     destFile=$PWD/tmp/${Kitname}-setup-${version}.sh
-    command makeself.sh --follow --base64 $PWD/bin $destFile "${Kitname} ${version}" ./setup.sh  || die # [src-dir] [dest-file] [label] [setup-command]
+    ${Scriptdir}/makeself.sh --follow --base64 $PWD/bin $destFile "${Kitname} ${version}" ./setup.sh  || die # [src-dir] [dest-file] [label] [setup-command]
     (
         cd $(dirname $destFile) && ln -sf $(basename $destFile) latest.sh
     )

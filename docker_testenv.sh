@@ -6,7 +6,15 @@ die() {
     exit 1
 }
 
-nonroot_user=vscode  # Create this nonroot user (--user [name])
+scriptName=$(readlink -f -- $0)
+scriptDir=$(dirname -- $scriptName)
+
+stubShell() {
+    echo "stubShell: do exit to continue" >&2
+    bash
+}
+
+export nonroot_user=vscode  # Create this nonroot user (--user [name])
 do_login=false # Login as nonroot_user?  (--login cmdline option)
 
 bashrc_content() {
@@ -17,17 +25,27 @@ set -o vi
 EOF
 }
 
+
 make_nonroot_user() {
     [[ $UID == 0 ]] || return
-    #su vscode bash true
-    adduser --uid 1000 $nonroot_user --gecos "" --disabled-password
+
+    if [[ "$(type -t yum)" == *file* ]];  then
+        # Redhat
+        adduser --uid 1000 $nonroot_user
+
+    else
+        # Debian:
+        adduser --uid 1000 $nonroot_user --gecos "" --disabled-password || {
+            die "adduser failed ${scriptName}";
+        }
+    fi
     bashrc_content > /home/${nonroot_user}/.bashrc
     echo "User $nonroot_user created"
 }
 
 install_requirements() {
     apt-get update || die apt-get update failed
-    apt-get install -y vim-tiny
+    apt-get install -y vim-tiny curl
     [[ -f ${TEST_DIR}/container_prep.sh ]] && {
         echo "Running ${TEST_DIR}/container_prep.sh:"
         ${TEST_DIR}/container_prep.sh || die "Failed container_prep.sh"

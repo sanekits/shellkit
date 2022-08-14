@@ -30,7 +30,11 @@ getMounts() {
     [[ -d $TEST_DIR ]] && builtin echo -n " -v ${TEST_DIR}:/test_dir:ro"
 }
 getBaseImage() {
-    echo "debian"
+    if [[ -z https_proxy ]]; then
+        echo "debian:latest"
+    else
+        docker image ls | grep -E "^.*dpkg-python-development-base\s*3.8" | awk '{print $1 ":" $2}'
+    fi
 }
 
 getInnerArgs() {
@@ -43,7 +47,9 @@ getEnvironment() {
 }
 
 getInnerCmdline() {
+    set -x
     echo "/workspace/shellkit/docker_testenv.sh $(getInnerArgs)"
+    set +x
 }
 
 echo "Current dir: $(pwd -P)"

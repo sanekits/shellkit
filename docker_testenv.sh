@@ -6,7 +6,15 @@ die() {
     exit 1
 }
 
-nonroot_user=vscode  # Create this nonroot user (--user [name])
+scriptName=$(readlink -f -- $0)
+scriptDir=$(dirname -- $scriptName)
+
+stubShell() {
+    echo "stubShell: do exit to continue" >&2
+    bash
+}
+
+export nonroot_user=vscode  # Create this nonroot user (--user [name])
 do_login=false # Login as nonroot_user?  (--login cmdline option)
 
 bashrc_content() {
@@ -17,10 +25,20 @@ set -o vi
 EOF
 }
 
+
 make_nonroot_user() {
     [[ $UID == 0 ]] || return
-    #su vscode bash true
-    adduser --uid 1000 $nonroot_user --gecos "" --disabled-password
+
+    if [[ "$(type -t yum)" == *file* ]];  then
+        # Redhat
+        adduser --uid 1000 $nonroot_user
+
+    else
+        # Debian:
+        adduser --uid 1000 $nonroot_user --gecos "" --disabled-password || {
+            die "adduser failed ${scriptName}";
+        }
+    fi
     bashrc_content > /home/${nonroot_user}/.bashrc
     echo "User $nonroot_user created"
 }

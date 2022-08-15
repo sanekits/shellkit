@@ -44,7 +44,7 @@ main() {
 
     [[ -z $rawPublish ]] && {
             if [[ $( command git status -s | command wc -l 2>/dev/null) -gt 0 ]]; then
-            die "One or more files in $PWD need to be committed before publish"
+            echo "WARNING: one or more files in $PWD need to be committed before publish"
         fi
     }
     checkTag  ${version} || die 103.4

@@ -32,6 +32,7 @@ main() {
     [[ -f shellkit/makeself.sh ]] || die "shellkit/makeself.sh is missing"
     local Kitname=$(basename $PWD)
     grep -Eq "^${Kitname}\$" bin/Kitname || die "bin/Kitname does not contain \"${Kitname}\""
+    grep -Eq "^${Kitname} " ~/.config/shellkit-meta/packages || echo "WARNING: ${Kitname} not listed in ~/.config/shellkit-meta/packages.  Add it to master shellkit-meta package list"
     [[ -x bin/setup.sh ]] || die "bin/setup.sh" is missing
     [[ -d bin/shellkit ]] || die "bin/shellkit dir is missing"
     [[ -d publish ]] || die "No publish/ subdir"

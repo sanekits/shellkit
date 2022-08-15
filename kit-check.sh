@@ -29,10 +29,12 @@ checkTag() {
 
 main() {
     [[ -f bin/Kitname ]] || die "bin/Kitname" is missing in $PWD
+    [[ -f shellkit/makeself.sh ]] || die "shellkit/makeself.sh is missing"
     local Kitname=$(basename $PWD)
     grep -Eq "^${Kitname}\$" bin/Kitname || die "bin/Kitname does not contain \"${Kitname}\""
     [[ -x bin/setup.sh ]] || die "bin/setup.sh" is missing
     [[ -d bin/shellkit ]] || die "bin/shellkit dir is missing"
+    command git ls-files | grep -Eq '^shellkit/' && die "At least one ./shellkit path is in git but should be ignored"
     [[ -L bin/shellkit/setup-base.sh ]] || die "bin/shellkit/setup-base.sh symlink is missing"
     [[ -e publish/publish-via-github-release.sh ]] || die "publish/publish-via-github-release.sh is missing"
 

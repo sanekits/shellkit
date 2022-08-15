@@ -34,17 +34,19 @@ main() {
     grep -Eq "^${Kitname}\$" bin/Kitname || die "bin/Kitname does not contain \"${Kitname}\""
     [[ -x bin/setup.sh ]] || die "bin/setup.sh" is missing
     [[ -d bin/shellkit ]] || die "bin/shellkit dir is missing"
+    [[ -d publish ]] || die "No publish/ subdir"
+    [[ -e publish/publish-via-github-release.sh ]] || die "No publish/publish-via-github-release.sh"
     command git ls-files | grep -Eq '^shellkit/' && die "At least one ./shellkit path is in git but should be ignored"
     [[ -L bin/shellkit/setup-base.sh ]] || die "bin/shellkit/setup-base.sh symlink is missing"
     [[ -e publish/publish-via-github-release.sh ]] || die "publish/publish-via-github-release.sh is missing"
+    local version=$( bin/${Kitname}-version.sh | cut -f2)
+    [[ -z $version ]] && die "Bad version number from bin/${Kitname}-version.sh"
 
     [[ -z $rawPublish ]] && {
             if [[ $( command git status -s | command wc -l 2>/dev/null) -gt 0 ]]; then
             die "One or more files in $PWD need to be committed before publish"
         fi
     }
-    local version=$( bin/${Kitname}-version.sh | cut -f2)
-    [[ -z $version ]] && die "Bad version number from bin/${Kitname}-version.sh"
     checkTag  ${version} || die 103.4
     echo "All checks passed OK"
 }

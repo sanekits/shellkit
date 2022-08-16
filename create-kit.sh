@@ -15,6 +15,26 @@ scriptDir=$(command dirname -- "${scriptName}")
 stub() {
    builtin echo "  <<< STUB[$*] >>> " >&2
 }
+
+initReadme() {
+    set +x
+    local kitname=$1
+    local version=$2
+    [[ -z $kitname ]] || die initReadme.1
+    cat <<-EOF
+#${kitname}
+
+## Setup
+  Download and install the self-extracting setup script:
+    https://github.com/sanekits/${kitname}/releases/latest/downloads/${kitname}-setup-${version}.sh
+
+  -- Or if [shellkit-pm]() is installed:
+    `shpm install ${kitname}`
+
+##
+EOF
+}
+
 main() {
     # Given:
     #   Cur dir is kit root
@@ -43,8 +63,10 @@ main() {
         command git init || die
     }
     [[ -f .gitignore ]] || {
-        echo "shellkit" >> .gitignore
+        echo "shellkit" > .gitignore
     }
+    [[ -f version ]] || echo '0.1.0' > version
+    [[ -f README.md ]] || initReadme > README.md
 
     true
 }

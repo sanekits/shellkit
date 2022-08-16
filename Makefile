@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: publish create-kit
+.PHONY: publish create-kit erase-kit
 
 # Given:
 #   - Kit has files to be packaged
@@ -28,9 +28,6 @@
 
 build_depends := bin/Kitname shellkit/Makefile $(kit_depends)
 
-tox_py_git_source="https://github.com/sanekits/tox.git"
-tox_files=bin/tox_core.py bin/setutils.py bin/tox-completion.bash
-
 none:
 	@echo There is no default target.
 
@@ -38,12 +35,10 @@ build: $(build_depends)
 	publish/publish-via-github-release.sh
 
 create-kit: shellkit/.git
-	# Given:
-	#   - ./shellkit/.git exists
-	# Then:
-	#   - git-pull the latest shellkit
-	#   - invoke shellkit/create-kit.sh
-
 	./shellkit/create-kit.sh
 
+erase-kit:
+	shellkit/erase-kit.sh
 
+apply-version:
+	shellkit/apply-version.sh

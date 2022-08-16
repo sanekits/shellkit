@@ -39,6 +39,16 @@ Or **if** [shellkit-pm](https://github.com/sanekits/shellkit-pm) is installed:
 EOF
 }
 
+fix_kitname() {
+    set -x
+    [[ -z $1 ]] && die fix_kitname.1  # Kitname text
+    [[ -f $2 ]] || die fix_kitname.2  # script path
+    local Kitname=$1
+    local shpath=$2
+
+    command sed -i -s "s%<Kitname>%${Kitname}%g" $shpath || die fix_kitname.3
+}
+
 main() {
     # Given:
     #   Cur dir is kit root
@@ -66,6 +76,7 @@ main() {
             command rsync -av ../shellkit/templates/bin/ ./ || die main.2
             ( builtin cd shellkit && command ln -sf ../../shellkit/setup-base.sh ./ ) || die main.2.3
             mv kitname-version.sh ${kitname}-version.sh || die main.2.4
+            fix_kitname $kitname ${kitname}-version.sh || die main.2.5
         }
     )
 

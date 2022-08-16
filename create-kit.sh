@@ -58,6 +58,8 @@ main() {
 
     [[ -d ./shellkit/.git ]] || die "main.0 Expected ./shellkit/.git to exist in $PWD"
 
+    local shellkit_version=$(cat ./shellkit/version)
+
     set -x  # This is not debugging!
     [[ -f make-kit.mk ]] || command cp shellkit/templates/make-kit.mk.template ./make-kit.mk || die
 
@@ -99,6 +101,8 @@ main() {
     [[ -f README.md ]] || initReadme "$kitname" "$version" > README.md
 
     command git add . || die main.9
+    command git commit -m "Initial scaffolding from ${shellkit_version}" || die main 9.1
+    command git tag ${version}
     echo "$kitname created OK"
     true
 }

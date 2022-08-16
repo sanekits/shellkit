@@ -39,6 +39,8 @@ build: $(build_depends)
 
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh
+	./shellkit/kit-check.sh
+	echo "Kit created OK"
 
 erase-kit:
 	# Destroy everything but the scaffolding.

@@ -5,7 +5,7 @@ scriptName="$(command readlink -f $0)"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR: $*" >&2
+    builtin echo "ERROR($(basename ${scriptName})): $*" >&2
     builtin exit 1
 }
 

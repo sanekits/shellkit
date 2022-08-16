@@ -5,7 +5,7 @@ scriptName="$(command readlink -f $0)"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR($scriptName): $*" >&2
+    builtin echo "ERROR($(basename -- $scriptName)): $*" >&2
     builtin exit 1
 }
 
@@ -26,7 +26,8 @@ main() {
     local kitname=$(cat bin/Kitname)
     [[ -n $version ]] || die bad version
     [[ -n $kitname ]] || die bad kitname
-    update_readme_version $kitname $version
+    update_readme_version $kitname $version || die main.3
+    true
 }
 
 [[ -z ${sourceMe} ]] && main "$@"

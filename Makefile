@@ -31,15 +31,17 @@ version := $(shell cat ./version)
 version_depends += README.md
 
 none:
-	@echo There is no default target.
+	@echo There is no default target. Try create-kit to start from scratch.
 
 build: $(build_depends)
-	publish/publish-via-github-release.sh
+	mkdir -p ./tmp && \
+    shellkit/makeself.sh --follow --base64 ./bin tmp/latest.sh "kitname version" ./setup.sh
 
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh
 
 erase-kit:
+	# Destroy everything but the scaffolding.
 	shellkit/erase-kit.sh
 
 apply-version: version $(version_depends)

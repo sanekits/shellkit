@@ -17,7 +17,7 @@ stub() {
 update_readme_version() {
     local kitname="$1"
     local version="$2"
-    command sed  -e "s%${kitname}-setup-[0-9]\.[0-9]\.[0-9]\.sh%${kitname}-setup-${version}.sh%" ./README.md
+    command sed  -i -e "s%${kitname}-setup-[0-9]\.[0-9]\.[0-9]\.sh%${kitname}-setup-${version}.sh%" ./README.md
 }
 
 main() {

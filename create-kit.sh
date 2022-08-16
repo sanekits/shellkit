@@ -46,25 +46,32 @@ main() {
     # Then:
     #   Create new kit elements
 
-    [[ -d ./shellkit/.git ]] || die "Expected ./shellkit/.git to exist in $PWD"
+    [[ -d ./shellkit/.git ]] || die "main.0 Expected ./shellkit/.git to exist in $PWD"
 
     set -x  # This is not debugging!
-    [[ -f make-kit.mk ]] || cp shellkit/templates/make-kit.mk.template ./make-kit.mk || die
+    [[ -f make-kit.mk ]] || command cp shellkit/templates/make-kit.mk.template ./make-kit.mk || die
 
-    [[ -d ./bin ]] || mkdir ./bin || die
-
+    command mkdir ./bin -p
     [[ -f ./bin/Kitname ]] && {
         kitname=$(cat ./bin/Kitname)
     } || {
         kitname=$(basename $PWD)
         [[ "$kitname" =~ ^[a-zA-Z][-a-zA-Z0-9_]+$ ]] || {
-            die "Kitname contains invalid chars.  Change directory name to match requirements"
+            die "main.3 Kitname contains invalid chars.  Change directory name to match requirements"
         }
         echo "$kitname" > ./bin/Kitname
     }
+    (
+        builtin cd ./bin && {
+            command rsync -av ../shellkit/templates/bin/ ./ || die main.2
+            ( builtin cd shellkit && command ln -sf ../../shellkit/setup-base.sh ./ ) || die main.2.3
+            mv kitname-version.sh ${kitname}-version.sh || die main.2.4
+        }
+    )
+
 
     [[ -d .git ]] || {
-        command git init || die
+        command git init || die main.4
     }
     [[ -f .gitignore ]] || {
         echo "shellkit" > .gitignore
@@ -73,7 +80,8 @@ main() {
     [[ -f version ]] || echo "${version}" > version
     [[ -f README.md ]] || initReadme "$kitname" "$version" > README.md
 
-    $kitname created OK
+    command git add . || die main.9
+    echo "$kitname created OK"
     true
 }
 

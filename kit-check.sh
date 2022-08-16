@@ -28,6 +28,7 @@ checkTag() {
 }
 
 main() {
+    [[ -L Makefile ]] || die "No ./Makefile symlink"
     [[ -f bin/Kitname ]] || die "bin/Kitname" is missing in $PWD
     [[ -f shellkit/makeself.sh ]] || die "shellkit/makeself.sh is missing"
     local Kitname=$(basename $PWD)
@@ -35,11 +36,9 @@ main() {
     grep -Eq "^${Kitname} " ~/.config/shellkit-meta/packages || echo "WARNING: ${Kitname} not listed in ~/.config/shellkit-meta/packages.  Add it to master shellkit-meta package list"
     [[ -x bin/setup.sh ]] || die "bin/setup.sh" is missing
     [[ -d bin/shellkit ]] || die "bin/shellkit dir is missing"
-    [[ -d publish ]] || die "No publish/ subdir"
-    [[ -e publish/publish-via-github-release.sh ]] || die "No publish/publish-via-github-release.sh"
+
     command git ls-files | grep -Eq '^shellkit/' && die "At least one ./shellkit path is in git but should be ignored"
     [[ -L bin/shellkit/setup-base.sh ]] || die "bin/shellkit/setup-base.sh symlink is missing"
-    [[ -e publish/publish-via-github-release.sh ]] || die "publish/publish-via-github-release.sh is missing"
     local version=$( bin/${Kitname}-version.sh | cut -f2)
     [[ -z $version ]] && die "Bad version number from bin/${Kitname}-version.sh"
 

@@ -82,6 +82,7 @@ main() {
             command mv kitname-version.sh ${kitname}-version.sh || die main.2.4
             fix_kitname $kitname ${kitname}-version.sh || die main.2.5
             command mv kitname.bashrc ${kitname}.bashrc || die main.2.6
+            fix_kitname $kitname ${kitname}.bashrc || die main.2.7
         }
     )
 

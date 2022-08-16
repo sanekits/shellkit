@@ -2,10 +2,14 @@
 #
 #  Setting up a shellkit-based tool:
 #
-#  1. Create a directory, cd into it
-#  2. git clone git@github.com:sanekits/shellkit
-#  3. ln -sf shellkit/Makefile
-#  4. make create-kit
+#  1. Create a directory.  Choose name carefully,
+#    as this will become the name of the kit.  No spaces. Must
+#    be unique among all kits in ~/.config/shellkit-meta/packages
+#    Use [a-zA-Z][:alnum:]-_ to restrict name charset
+#  2. cd into new dir
+#  3. git clone git@github.com:sanekits/shellkit
+#  4. ln -sf shellkit/Makefile
+#  5. make create-kit
 #
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
@@ -20,7 +24,9 @@
 # Then:
 #   - Makefile will use the values set in make-kit.mk
 
-include ./make-kit.mk  # Project-specific makefile
+-include ./make-kit.mk  # Project-specific makefile
+
+build_depends := bin/Kitname shellkit/Makefile $(kit_depends)
 
 tox_py_git_source="https://github.com/sanekits/tox.git"
 tox_files=bin/tox_core.py bin/setutils.py bin/tox-completion.bash
@@ -28,7 +34,7 @@ tox_files=bin/tox_core.py bin/setutils.py bin/tox-completion.bash
 none:
 	@echo There is no default target.
 
-publish: Makefile shellkit/publish-via-github-release.sh $(kit_depends)
+build: $(build_depends)
 	publish/publish-via-github-release.sh
 
 create-kit: shellkit/.git
@@ -37,5 +43,7 @@ create-kit: shellkit/.git
 	# Then:
 	#   - git-pull the latest shellkit
 	#   - invoke shellkit/create-kit.sh
+
+	./shellkit/create-kit.sh
 
 

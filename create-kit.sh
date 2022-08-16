@@ -88,7 +88,8 @@ main() {
 
 
     [[ -d .git ]] || {
-        command git init || die main.4
+        command git init || die main.4.1
+        command git remote add upstream git@github.com:sanekits/${kitname} || die main.4.2
     }
     [[ -f .gitignore ]] || {
         echo -e "shellkit\ntmp" > .gitignore

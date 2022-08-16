@@ -74,9 +74,14 @@ main() {
     (
         builtin cd ./bin && {
             command rsync -av ../shellkit/templates/bin/ ./ || die main.2
-            ( builtin cd shellkit && command ln -sf ../../shellkit/setup-base.sh ./ ) || die main.2.3
-            mv kitname-version.sh ${kitname}-version.sh || die main.2.4
+            (
+                builtin cd shellkit \
+                && command ln -sf ../../shellkit/setup-base.sh ./ \
+                && command ln -sf ../../shellkit/realpath.sh ./
+            ) || die main.2.3
+            command mv kitname-version.sh ${kitname}-version.sh || die main.2.4
             fix_kitname $kitname ${kitname}-version.sh || die main.2.5
+            command mv kitname.bashrc ${kitname}.bashrc || die main.2.6
         }
     )
 
@@ -85,7 +90,7 @@ main() {
         command git init || die main.4
     }
     [[ -f .gitignore ]] || {
-        echo "shellkit" > .gitignore
+        echo -e "shellkit\ntmp" > .gitignore
     }
     local version='0.1.0'
     [[ -f version ]] || echo "${version}" > version

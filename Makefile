@@ -42,6 +42,9 @@ create-kit: shellkit/.git
 	./shellkit/kit-check.sh
 	echo "Kit created OK"
 
+kit-check:
+	./shellkit/kit-check.sh
+
 erase-kit:
 	# Destroy everything but the scaffolding.
 	shellkit/erase-kit.sh

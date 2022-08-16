@@ -30,8 +30,12 @@ main() {
     echo "    - ./Makefile -> shellkit/Makefile"
     echo "Here's what you will lose:"
     echo "${killList[@]}" | command sed 's/^/   /'
-    read -p "If you're really sure, type \"yes\":"
-    [[ $REPLY == yes ]] || die main.2 Probably smart to quit
+    [[ -z $FORCE_ERASE ]] && {
+        read -p "If you're really sure, type \"yes\":"
+        [[ $REPLY == yes ]] || die main.2 Probably smart to quit
+    } || {
+        echo "YOU \$FORCE_ERASE this!" >&2
+    }
     [[ -n "${killList[@]}" ]] || die main.4
     (
         builtin cd $killDir || die main.4.1

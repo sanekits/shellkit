@@ -1,0 +1,6 @@
+# hello.rc - init file for shellkit-hello
+
+do-hello() {
+    hello.sh
+}
+

@@ -26,7 +26,9 @@
 
 -include ./make-kit.mk  # Project-specific makefile
 
-build_depends := bin/Kitname shellkit/Makefile $(kit_depends)
+build_depends += bin/Kitname shellkit/Makefile
+version := $(shell cat ./version)
+version_depends += README.md
 
 none:
 	@echo There is no default target.
@@ -40,5 +42,7 @@ create-kit: shellkit/.git
 erase-kit:
 	shellkit/erase-kit.sh
 
-apply-version:
+apply-version: version $(version_depends)
+	# Apply the updated ./version to files which have
+	# version dependencies
 	shellkit/apply-version.sh

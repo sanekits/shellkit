@@ -61,6 +61,10 @@ erase-kit:
 	# Destroy everything but the scaffolding.
 	shellkit/erase-kit.sh
 
+install-kit:
+	# Install kit in current shell
+	tmp/latest.sh
+
 update-tag:
 	git tag ${version} -f
 	cd shellkit && git tag ${kitname}-${version} -f

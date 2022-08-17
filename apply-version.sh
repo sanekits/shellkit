@@ -24,7 +24,7 @@ update_version_script() {
     local kitname="$1"
     local version="$2"
 
-    command sed  -i -e "s%${kitname}-setup-[0-9]\.[0-9]\.[0-9]\.sh%${kitname}-setup-${version}.sh%" bin/${kitname}-version.sh
+    command sed  -i -e "s%KitVersion=[0-9]\.[0-9]\.[0-9]%KitVersion=${version}%" bin/${kitname}-version.sh
 }
 
 main() {
@@ -34,6 +34,7 @@ main() {
     [[ -n $version ]] || die bad version
     [[ -n $kitname ]] || die bad kitname
     update_readme_version $kitname $version || die main.3
+    set -x
     update_version_script $kitname $version || die main.4
     true
 }

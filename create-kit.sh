@@ -103,6 +103,8 @@ main() {
     command git add . || die main.9
     command git commit -m "Initial scaffolding from ${shellkit_version}" || die main 9.1
     command git tag ${version}
+    #builtin echo "00000000000000000000000000000000" > build-hash
+    #command git add build-hash
     echo "$kitname created OK"
     true
 }

@@ -13,17 +13,35 @@ stub() {
    builtin echo "  <<< STUB[$*] >>> " >&2
 }
 
-checkTag() {
-    # verify existence of local tag matching version
-    local version=$1
-    [[ -z $version ]] && die "No version passed to checkTag"
+checkLocalTag() {
+    # Given:
+    #   - git working copy root is $PWD
+    # When:
+    #   - a git tag exists that matches the contents of ./version
+    #   - the HEAD revision in git matches the tag revision
+    #   - There are no dirty files
+    # Then:
+    #   - Function returns 0 and prints nothing
+    # Otherwise:
+    #   - Function returns nonzero and prints warning
+    local _version=$(cat ./version)
+    [[ -z $_version ]] && die "No version detected in checkLocalTag"
 
-    version="${version//./\~}"
+    local version="${_version//./\~}"
     command git tag | command sed 's/\./~/g' | command grep -Eq "${version}" || {
-        builtin echo "No git tag with version $1" >&2
-        false
-        return
+        return $(die "No git tag with version $_version")
     }
+    local head_hash=$( command git rev-parse HEAD )
+    [[ -n $head_hash ]] || return $(die "Can't find git HEAD hash")
+    local tag_hash=$( command git rev-parse ${_version} )
+    [[ -n $tag_hash ]] || return $(die "Can't find git has for tag $_version")
+    [[ "$head_hash" == "$tag_hash" ]] || {
+        return $(die "HEAD hash does not match tag $_version")
+    }
+
+    if [[ $( command git status -s . | command wc -l 2>/dev/null) -gt 0 ]]; then
+        return $(die "Uncommited files found: commit them and then update version and tag or force-update tag")
+    fi
     true
 }
 
@@ -42,12 +60,7 @@ main() {
     local version=$( bin/${Kitname}-version.sh | cut -f2)
     [[ -z $version ]] && die "Bad version number from bin/${Kitname}-version.sh"
 
-    [[ -z $rawPublish ]] && {
-            if [[ $( command git status -s | command wc -l 2>/dev/null) -gt 0 ]]; then
-            echo "WARNING: one or more files in $PWD need to be committed before publish"
-        fi
-    }
-    checkTag  ${version} || die 103.4
+    checkLocalTag  || die 103.4
     echo "All checks passed OK"
 }
 

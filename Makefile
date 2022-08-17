@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: publish create-kit erase-kit
+.PHONY: publish create-kit erase-kit build clean
 
 # Given:
 #   - Kit has files to be packaged
@@ -26,23 +26,35 @@
 
 -include ./make-kit.mk  # Project-specific makefile
 
-build_depends += bin/Kitname shellkit/Makefile
+build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
+
 version := $(shell cat ./version)
-version_depends += README.md
+kitname := $(shell cat bin/Kitname)
+setup_script := $(kitname)-setup-$(version).sh
 
 none:
 	@echo There is no default target. Try create-kit to start from scratch.
 
-build: $(build_depends)
+build: tmp/${setup_script} build-hash
+
+clean:
+	rm -rf tmp/*
+
+tmp/${setup_script} build-hash: $(build_depends)
 	mkdir -p ./tmp && \
-    shellkit/makeself.sh --follow --base64 ./bin tmp/latest.sh "kitname version" ./setup.sh
+    shellkit/makeself.sh --follow --base64 ./bin tmp/${setup_script} "${kitname} ${version} setup" ./setup.sh
+	ln -sf ${setup_script} tmp/latest.sh
+	/bin/bash -x tmp/latest.sh 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//' > build-hash
+	git add build-hash && git commit -m "build-hash updated"
+	@echo "Done: ${kitname}:${version} $$(cat build-hash)"
+
 
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh
 	./shellkit/kit-check.sh
 	echo "Kit created OK"
 
-kit-check:
+check-kit:
 	./shellkit/kit-check.sh
 
 erase-kit:

@@ -5,7 +5,7 @@ scriptName="$(command readlink -f $0)"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR(${scriptName}): $*" >&2
+    builtin echo "ERROR($(basename ${scriptName})): $*" >&2
     builtin exit 1
 }
 
@@ -30,6 +30,10 @@ main() {
     echo "    - ./Makefile -> shellkit/Makefile"
     echo "Here's what you will lose:"
     echo "${killList[@]}" | command sed 's/^/   /'
+    [[ -n "${killList[@]}" ]] || {
+        echo "WARNING: No files here to kill." >&2
+        exit
+    }
     [[ -z $FORCE_ERASE ]] && {
         echo "(Note: define FORCE_ERASE=1 to bypass confirmation prompt)"
         read -p "If you're really sure, type \"yes\"."
@@ -37,7 +41,6 @@ main() {
     } || {
         echo "YOU \$FORCE_ERASE this!" >&2
     }
-    [[ -n "${killList[@]}" ]] || die main.4
     (
         builtin cd $killDir || die main.4.1
         command rm -rf "${killList[@]}" || die main.4.2

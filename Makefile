@@ -32,6 +32,8 @@ version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
 
+next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md
+
 none:
 	@echo There is no default target. Try create-kit to start from scratch.
 
@@ -52,7 +54,7 @@ tmp/${setup_script} build-hash: $(build_depends)
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh
 	NONTFATAL_HASH_MISMATCH=1 ./shellkit/check-kit.sh
-	echo "Kit created OK.  See https://github.com/sanekits/shellkit/docs/create-kit-next-steps.md for next steps."
+	@echo "Kit created OK.  See ${next_steps_doc} for next steps."
 
 check-kit:
 	./shellkit/check-kit.sh

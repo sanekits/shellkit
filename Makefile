@@ -44,7 +44,7 @@ tmp/${setup_script} build-hash: $(build_depends)
 	mkdir -p ./tmp && \
     shellkit/makeself.sh --follow --base64 ./bin tmp/${setup_script} "${kitname} ${version} setup" ./setup.sh
 	ln -sf ${setup_script} tmp/latest.sh
-	/bin/bash -x tmp/latest.sh 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//' > build-hash
+	/bin/bash -x tmp/latest.sh --list 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//' > build-hash
 	-git add build-hash && git commit build-hash -m "build-hash updated"
 	@echo "Done: ${kitname}:${version} $$(cat build-hash)"
 

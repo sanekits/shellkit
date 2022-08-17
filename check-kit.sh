@@ -45,6 +45,14 @@ checkLocalTag() {
     true
 }
 
+checkBuildHash() {
+    command git status | grep -q build-hash && return $(die build-hash is not committed to git)
+    local hash=$(command bash -x tmp/latest.sh --list 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//')
+    local build_hash=$(cat build-hash)
+    [[ "${hash}" == "${build_hash}" ]] || return $(die "./build-hash does not match value from tmp/latest.sh ($hash).  Try a fresh build, commit, and update tag")
+    true
+}
+
 main() {
     [[ -L Makefile ]] || die "No ./Makefile symlink"
     [[ -f bin/Kitname ]] || die "bin/Kitname" is missing in $PWD
@@ -61,6 +69,7 @@ main() {
     [[ -z $version ]] && die "Bad version number from bin/${Kitname}-version.sh"
 
     checkLocalTag  || die 103.4
+    checkBuildHash || die 103.5
     echo "All checks passed OK"
 }
 

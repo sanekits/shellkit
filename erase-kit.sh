@@ -31,7 +31,8 @@ main() {
     echo "Here's what you will lose:"
     echo "${killList[@]}" | command sed 's/^/   /'
     [[ -z $FORCE_ERASE ]] && {
-        read -p "If you're really sure, type \"yes\":"
+        echo "(Note: define FORCE_ERASE=1 to bypass confirmation prompt)"
+        read -p "If you're really sure, type \"yes\"."
         [[ $REPLY == yes ]] || die main.2 Probably smart to quit
     } || {
         echo "YOU \$FORCE_ERASE this!" >&2

@@ -51,8 +51,8 @@ tmp/${setup_script} build-hash: $(build_depends)
 
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh
-	./shellkit/check-kit.sh
-	echo "Kit created OK"
+	NONTFATAL_HASH_MISMATCH=1 ./shellkit/check-kit.sh
+	echo "Kit created OK.  See https://github.com/sanekits/shellkit/docs/create-kit-next-steps.md for next steps."
 
 check-kit:
 	./shellkit/check-kit.sh

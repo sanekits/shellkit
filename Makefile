@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: publish create-kit erase-kit build clean
+.PHONY: publish apply-version update-tag check-kit create-kit erase-kit build clean
 
 # Given:
 #   - Kit has files to be packaged
@@ -45,13 +45,13 @@ tmp/${setup_script} build-hash: $(build_depends)
     shellkit/makeself.sh --follow --base64 ./bin tmp/${setup_script} "${kitname} ${version} setup" ./setup.sh
 	ln -sf ${setup_script} tmp/latest.sh
 	/bin/bash -x tmp/latest.sh 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//' > build-hash
-	git add build-hash && git commit -m "build-hash updated"
+	-git add build-hash && git commit build-hash -m "build-hash updated"
 	@echo "Done: ${kitname}:${version} $$(cat build-hash)"
 
 
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh
-	./shellkit/kit-check.sh
+	./shellkit/check-kit.sh
 	echo "Kit created OK"
 
 check-kit:
@@ -60,6 +60,10 @@ check-kit:
 erase-kit:
 	# Destroy everything but the scaffolding.
 	shellkit/erase-kit.sh
+
+update-tag:
+	git tag ${version} -f
+	cd shellkit && git tag ${kitname}-${version} -f
 
 apply-version: version $(version_depends)
 	# Apply the updated ./version to files which have

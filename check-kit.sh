@@ -1,5 +1,5 @@
 #!/bin/bash
-# kit-check.sh:  integrity check for a shellkit-based  tool.  Checks for compatibility and common errors pre-publish
+# check-kit.sh:  integrity check for a shellkit-based  tool.  Checks for compatibility and common errors pre-publish
 
 scriptName="$(command readlink -f $0)"
 scriptDir=$(command dirname -- "${scriptName}")

@@ -4,8 +4,8 @@
     [[ 1 -eq  1 ]]
 }
 
-do-hello() {
+do-<Kitname>() {
     # TODO: This is a test function.  You can discard it.
-    hello.sh
+    <Kitname>.sh
 }
 

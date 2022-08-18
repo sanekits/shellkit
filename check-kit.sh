@@ -1,7 +1,20 @@
 #!/bin/bash
 # check-kit.sh:  integrity check for a shellkit-based  tool.  Checks for compatibility and common errors pre-publish
 
-scriptName="$(command readlink -f $0)"
+canonpath() {
+    type -t realpath.sh &>/dev/null && {
+        realpath.sh -f "$@"
+        return
+    }
+    type -t readlink &>/dev/null && {
+        readlink -f "$@"
+        return
+    }
+    # Fallback: Ok for rough work only, does not handle some corner cases:
+    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+}
+
+scriptName="$(canonpath  $0)"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {

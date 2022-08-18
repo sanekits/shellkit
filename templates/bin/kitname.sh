@@ -1,5 +1,7 @@
 #!/bin/bash
 # <Kitname>.sh
+#  This script can be removed if you don't need it -- and if you do
+# that you should remove the entry from _symlinks_ and make-kit.mk also.
 
 canonpath() {
     type -t realpath.sh &>/dev/null && {

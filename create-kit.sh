@@ -1,16 +1,16 @@
 #!/bin/bash
 # create-kit.sh
 
-die() {
-    builtin echo "ERROR($scriptName): $*" >&2
-    builtin exit 1
-}
 
 [[ -x shellkit/realpath.sh ]] || die  $0 cannot find shellkit/realpath.sh
 
 scriptName="$(command realpath.sh -f $0)"
 scriptDir=$(command dirname -- "${scriptName}")
 
+die() {
+    builtin echo "ERROR($(basename $scriptName)): $*" >&2
+    builtin exit 1
+}
 
 stub() {
    builtin echo "  <<< STUB[$*] >>> " >&2
@@ -40,13 +40,21 @@ EOF
 }
 
 fix_kitname() {
-    set -x
+    # Given:
+    #  - a filename in the CURRENT dir containing template content
+    # Then:
+    #  - Replace all text matching <Kitname> with the kitname argument
+    #  - Rename the file if it contains "kitname", substituting the kitname argument
     [[ -z $1 ]] && die fix_kitname.1  # Kitname text
     [[ -f $2 ]] || die fix_kitname.2  # script path
     local Kitname=$1
-    local shpath=$2
+    local filename=$2
 
-    command sed -i -s "s%<Kitname>%${Kitname}%g" $shpath || die fix_kitname.3
+    [[ $filename == */* ]] && die "fix_kitname.3.1 filename argument must not contain dir elements"
+    command sed -i -s "s%<Kitname>%${Kitname}%g" $filename || die fix_kitname.3
+    local newFilename=$( echo "$filename" | command sed "s/kitname/${kitname}/g")
+    [[ $newFilename == $(basename $filename) ]] && return  # No need to rename
+    command mv $filename $newFilename || die "fix_kitname.4 mv failed"
 }
 
 main() {
@@ -81,10 +89,10 @@ main() {
                 && command ln -sf ../../shellkit/setup-base.sh ./ \
                 && command ln -sf ../../shellkit/realpath.sh ./
             ) || die main.2.3
-            command mv kitname-version.sh ${kitname}-version.sh || die main.2.4
-            fix_kitname $kitname ${kitname}-version.sh || die main.2.5
-            command mv kitname.bashrc ${kitname}.bashrc || die main.2.6
-            fix_kitname $kitname ${kitname}.bashrc || die main.2.7
+            # Replace <Kitname> placeholder text and possibly rename files in the created it:
+            for filename in kitname-version.sh kitname.bashrc kitname.sh _symlinks_ setup.sh; do
+                fix_kitname $kitname $filename || die "main.2.5  processing ${filename} failed"
+            done
         }
     )
 

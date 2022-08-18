@@ -15,7 +15,7 @@ scriptName="$(canonpath $0)"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR: $*" >&2
+    builtin echo "ERROR(shellkit-help.sh): $*" >&2
     builtin exit 1
 }
 

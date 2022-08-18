@@ -3,17 +3,21 @@
 
 
 die() {
-    echo "ERROR: $@" >&2
+    echo "ERROR(setup-base.sh): $@" >&2
     exit 1
 }
 
 canonpath() {
-    type -t realpath.sh &>/dev/null && {
+    builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
         return
     }
-    # Ok for rough work only.  Prefer realpath.sh if it's on the path.
-    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+    builtin type -t readlink &>/dev/null && {
+        command readlink -f "$@"
+        return
+    }
+    # Fallback: Ok for rough work only, does not handle some corner cases:
+    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
 }
 
 reload_reqd=false

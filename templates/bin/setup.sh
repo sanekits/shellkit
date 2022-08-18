@@ -6,16 +6,16 @@
 # and installation steps.
 
 canonpath() {
-    type -t realpath.sh &>/dev/null && {
+    builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
         return
     }
-    type -t readlink &>/dev/null && {
-        readlink -f "$@"
+    builtin type -t readlink &>/dev/null && {
+        command readlink -f "$@"
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(dirname -- $0)"; builtin echo "$(pwd -P)/$(basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
 }
 
 stub() {
@@ -27,7 +27,7 @@ scriptDir=$(command dirname -- "${scriptName}")
 source ${scriptDir}/shellkit/setup-base.sh
 
 die() {
-    builtin echo "ERROR($(basename ${scriptName})): $*" >&2
+    builtin echo "ERROR(setup.sh): $*" >&2
     builtin exit 1
 }
 

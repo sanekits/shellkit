@@ -4,23 +4,23 @@
 # that you should remove the entry from _symlinks_ and make-kit.mk also.
 
 canonpath() {
-    type -t realpath.sh &>/dev/null && {
+    builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
         return
     }
-    type -t readlink &>/dev/null && {
-        readlink -f "$@"
+    builtin type -t readlink &>/dev/null && {
+        command readlink -f "$@"
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
 }
 
 scriptName="$(canonpath "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR: $*" >&2
+    builtin echo "ERROR($(command basename -- ${scriptName})): $*" >&2
     builtin exit 1
 }
 

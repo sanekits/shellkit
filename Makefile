@@ -37,12 +37,12 @@ next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-n
 none:
 	@echo There is no default target. Try create-kit to start from scratch.
 
-build: tmp/${setup_script} build-hash
+build: tmp/latest.sh tmp/${setup_script} build-hash
 
 clean:
 	rm -rf tmp/*
 
-tmp/${setup_script} build-hash: $(build_depends)
+tmp/${setup_script} tmp/latest.sh build-hash: $(build_depends)
 	mkdir -p ./tmp && \
     shellkit/makeself.sh --follow --base64 ./bin tmp/${setup_script} "${kitname} ${version} setup" ./setup.sh
 	ln -sf ${setup_script} tmp/latest.sh

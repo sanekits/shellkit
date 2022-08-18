@@ -69,7 +69,6 @@ main() {
     local shellkit_version=$(cat ./shellkit/version)
 
     set -x  # This is not debugging!
-    [[ -f make-kit.mk ]] || command cp shellkit/templates/make-kit.mk.template ./make-kit.mk || die
 
     command mkdir ./bin -p
     [[ -f ./bin/Kitname ]] && {
@@ -80,6 +79,10 @@ main() {
             die "main.3 Kitname contains invalid chars.  Change directory name to match requirements"
         }
         echo "$kitname" > ./bin/Kitname
+    }
+    [[ -f make-kit.mk ]] || {
+        command cp shellkit/templates/make-kit.mk.template ./make-kit.mk || die main.1 failed copying make-kit.mk
+        fix_kitname $kitname make-kit.mk || die main.1.4
     }
     (
         builtin cd ./bin && {

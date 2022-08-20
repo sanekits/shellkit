@@ -11,9 +11,6 @@ kit_depends := \
     bin/<Kitname>.bashrc \
     bin/<Kitname>.sh
 
-none:
-    @echo Sorry, there\'s no default target.  Try "make build" for starters.
-    exit 1
 
 publish: pre-publish
 	@# TODO: you can customize publication by adding steps here (before publish-common)

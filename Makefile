@@ -24,6 +24,13 @@
 # Then:
 #   - Makefile will use the values set in make-kit.mk
 
+none:
+	@if [ ! -d ./shellkit ]; then \
+		echo "You're in the wrong directory.  This Makefile is intended for use in the parent of ./shellkit";  \
+		exit 1 ;\
+	fi
+	@echo There is no default target. Try create-kit to start from scratch.
+
 -include ./make-kit.mk  # Project-specific makefile
 
 build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
@@ -34,12 +41,6 @@ setup_script := $(kitname)-setup-$(version).sh
 
 next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md
 
-none:
-	@if [ ! -d ./shellkit ]; then \
-		echo "You're in the wrong directory.  This Makefile is intended for use in the parent of ./shellkit";  \
-		exit 1 ;\
-	fi
-	@echo There is no default target. Try create-kit to start from scratch.
 
 build: tmp/latest.sh tmp/${setup_script} build-hash
 

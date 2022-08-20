@@ -92,6 +92,6 @@ pre-publish: apply-version build git-status-clean update-tag check-kit push-tag
 
 publish-common: pre-publish ${HOME}/downloads
 	# Common logic needed to publish a kit
-	cp ${setup_script} ${HOME}/downloads
+	cp tmp/${setup_script} ${HOME}/downloads
 	@echo "Script ${HOME}/downloads/${setup_script} should be attached to the release artifacts"
 

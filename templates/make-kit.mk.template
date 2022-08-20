@@ -10,3 +10,7 @@
 kit_depends := \
     bin/<Kitname>.bashrc \
     bin/<Kitname>.sh
+
+publish: pre-publish
+    # TODO: update this with any custom publish steps needed by <Kitname>
+	@echo publish complete OK

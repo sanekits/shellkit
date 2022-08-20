@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: publish apply-version update-tag push-tag check-kit create-kit erase-kit build clean
+.PHONY: publish apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish
 
 # Given:
 #   - Kit has files to be packaged
@@ -71,6 +71,9 @@ update-tag:
 	git tag ${version} -f
 	cd shellkit && git tag ${kitname}-${version} -f
 
+git-status-clean:
+	shellkit/git-status-clean.sh
+
 push-tag:
 	git push --tag -f
 	cd shellkit && git push --tag -f
@@ -79,3 +82,6 @@ apply-version: version $(version_depends)
 	# Apply the updated ./version to files which have
 	# version dependencies
 	shellkit/apply-version.sh
+
+pre-publish: apply-version git-status-clean update-tag check-kit push-tag
+	@echo pre-publish completed OK

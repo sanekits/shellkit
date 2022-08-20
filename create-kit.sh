@@ -51,7 +51,7 @@ fix_kitname() {
     local filename=$2
 
     [[ $filename == */* ]] && die "fix_kitname.3.1 filename argument must not contain dir elements"
-    command sed -i -s "s%<Kitname>%${Kitname}%g" $filename || die fix_kitname.3
+    command sed -i.bak -s "s%<Kitname>%${Kitname}%g" $filename || die fix_kitname.3
     local newFilename=$( echo "$filename" | command sed "s/kitname/${kitname}/g")
     [[ $newFilename == $(basename $filename) ]] && return  # No need to rename
     command mv $filename $newFilename || die "fix_kitname.4 mv failed"

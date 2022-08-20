@@ -35,6 +35,10 @@ setup_script := $(kitname)-setup-$(version).sh
 next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md
 
 none:
+	@if [ ! -d ./shellkit ]; then \
+		echo "You're in the wrong directory.  This Makefile is intended for use in the parent of ./shellkit";  \
+		exit 1 ;\
+	fi
 	@echo There is no default target. Try create-kit to start from scratch.
 
 build: tmp/latest.sh tmp/${setup_script} build-hash

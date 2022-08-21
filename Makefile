@@ -88,7 +88,7 @@ apply-version: version $(version_depends)
 	# version dependencies
 	shellkit/apply-version.sh
 
-pre-publish: apply-version build git-status-clean update-tag check-kit ${setup_script}
+pre-publish: apply-version build git-status-clean update-tag check-kit tmp/${setup_script}
 	@echo pre-publish completed OK
 
 publish-common: pre-publish ${HOME}/downloads

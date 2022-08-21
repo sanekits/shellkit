@@ -30,14 +30,12 @@ update_version_script() {
 }
 
 main() {
-    set -x
     local version=$(cat version)
     local kitname=$(cat bin/Kitname)
     [[ -n $version ]] || die bad version
     [[ -n $kitname ]] || die bad kitname
     [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "bad version: \"$version\""
     update_readme_version $kitname $version || die main.3
-    set -x
     update_version_script $kitname $version || die main.4
     true
 }

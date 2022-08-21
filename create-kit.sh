@@ -12,6 +12,8 @@ die() {
     builtin exit 1
 }
 
+sourceMe=1 source "${scriptDir}/sedxi" || die "0.1"
+
 stub() {
    builtin echo "  <<< STUB[$*] >>> " >&2
 }
@@ -44,14 +46,14 @@ fix_kitname() {
     #  - a filename in the CURRENT dir containing template content
     # Then:
     #  - Replace all text matching <Kitname> with the kitname argument
-    #  - Rename the file if it contains "kitname", substituting the kitname argument
+    #  - Rename the file if filename contains "kitname", substituting the kitname argument
     [[ -z $1 ]] && die fix_kitname.1  # Kitname text
     [[ -f $2 ]] || die fix_kitname.2  # script path
     local Kitname=$1
-    local filename=$2
+    local filename="$2"
 
     [[ $filename == */* ]] && die "fix_kitname.3.1 filename argument must not contain dir elements"
-    command sed -i.bak -e "s%<Kitname>%${Kitname}%g" $filename || die fix_kitname.3
+    sedxi "$filename" -e "s%<Kitname>%${Kitname}%g"  || die fix_kitname.3
     local newFilename=$( echo "$filename" | command sed "s/kitname/${kitname}/g")
     [[ $newFilename == $(basename $filename) ]] && return  # No need to rename
     command mv $filename $newFilename || die "fix_kitname.4 mv failed"
@@ -66,9 +68,9 @@ main() {
 
     [[ -d ./shellkit/.git ]] || die "main.0 Expected ./shellkit/.git to exist in $PWD"
 
-    local shellkit_version=$(cat ./shellkit/version)
+    local shellkit_version=$(cat ./shellkit/version )
+    [[ -n $shellkit_version ]] || die "main.0.3 No shellkit/version"
 
-    set -x  # This is not debugging!
 
     command mkdir ./bin -p
     [[ -f ./bin/Kitname ]] && {

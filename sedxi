@@ -1,0 +1,21 @@
+#!/bin/bash
+# sedxi: sed wrapper to deal with OSX
+
+sedxi() {
+    local filename="$1"
+    shift
+    command sed --help 2>&1 | grep -q 'GNU' && {
+        # Gnu branch:
+        command sed -i "$@" "${filename}"
+        exit
+    } || :
+    # Osx/bsd branch:
+    command sed -i.bak "$@" "${filename}"
+    result=$?
+    command rm "${filename}.bak"
+}
+
+[[ -z $sourceMe ]] && {
+    sedx "$@"
+}
+true

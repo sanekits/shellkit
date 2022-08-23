@@ -88,6 +88,12 @@ shrc_fixup() {
     if [[ "${xtype}" == *function* ]]; then
         return
     fi
+    local rcpath="${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc"
+    [[ -f ${rcpath} ]] || die "Can't find ${rcpath} in shrc_fixup()"
+    (
+        source "${rcpath}"
+        [[ $(type -t ${Kitname}-semaphore) ]] || die "${rcpath} does not define required function ${Kitname}-semaphore in shrc_fixup()"
+    )
 
     ( # Add hook to .bashrc
         echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"

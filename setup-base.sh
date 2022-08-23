@@ -92,8 +92,8 @@ shrc_fixup() {
     [[ -f ${rcpath} ]] || die "Can't find ${rcpath} in shrc_fixup()"
     (
         source "${rcpath}"
-        [[ $(type -t ${Kitname}-semaphore) ]] || die "${rcpath} does not define required function ${Kitname}-semaphore in shrc_fixup()"
-    )
+        [[ $(type -t ${Kitname}-semaphore) == *function* ]] || die "${rcpath} does not define required function ${Kitname}-semaphore in shrc_fixup()"
+    ) || die
 
     ( # Add hook to .bashrc
         echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"

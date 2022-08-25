@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common
+.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-status
 
 # Given:
 #   - Kit has files to be packaged
@@ -98,3 +98,10 @@ publish-common: pre-publish ${HOME}/downloads
 	cp tmp/${setup_script} ${HOME}/downloads
 	@echo "MANUAL STEP: Script ${HOME}/downloads/${setup_script} should be attached to the release artifacts"
 
+git-pull:
+	cd shellkit && command git pull && git branch
+	git pull && git branch
+
+git-status:
+	cd shellkit && git status
+	git status

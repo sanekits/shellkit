@@ -38,6 +38,8 @@ build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile 
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
+git_remote := $(shell git remote -v | grep -E '\(push\)' | awk '{print $$1}')
+git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')
 
 next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md
 
@@ -80,8 +82,8 @@ git-status-clean:
 	shellkit/git-status-clean.sh
 
 push-tag:
-	git push --tag -f
-	cd shellkit && git push --tag -f
+	git push ${git_remote} tag ${version} -f
+	cd shellkit && git push ${git_shellkit_remote} tag ${kitname}-${version} -f
 
 apply-version: version $(version_depends)
 	# Apply the updated ./version to files which have

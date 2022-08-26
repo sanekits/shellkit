@@ -78,8 +78,10 @@ main() {
 
     command git ls-files | grep -Eq '^shellkit/' && die "At least one ./shellkit path is in git but should be ignored"
     [[ -L bin/shellkit/setup-base.sh ]] || die "bin/shellkit/setup-base.sh symlink is missing"
-    local version=$( bin/${Kitname}-version.sh | cut -f2)
+    local xpath version
+    read xpath version <<< $( bin/${Kitname}-version.sh )
     [[ -z $version ]] && die "Bad version number from bin/${Kitname}-version.sh"
+    [[ -d $xpath ]] || die "Version script does not point to a dir: $xpath"
 
     checkLocalTag  || die 103.4
     checkBuildHash || {

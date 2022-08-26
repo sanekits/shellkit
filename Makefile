@@ -88,7 +88,7 @@ push-tag:
 apply-version: version $(version_depends)
 	# Apply the updated ./version to files which have
 	# version dependencies
-	shellkit/apply-version.sh
+	shellkit/apply-version.sh ${apply_version_extra_files}
 
 pre-publish: apply-version build git-status-clean update-tag check-kit tmp/${setup_script}
 	@echo pre-publish completed OK

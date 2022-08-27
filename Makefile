@@ -101,8 +101,12 @@ publish-common: git-pull pre-publish ${HOME}/downloads ${publish_extra_files}
 	@echo "MANUAL STEP: Script ${HOME}/downloads/${setup_script} should be attached to the release artifacts"
 
 git-pull:
-	cd shellkit && command git pull && git branch
-	git pull && git branch
+	cd shellkit && command git pull && git status
+	command git pull && git status
+
+git-push:
+	cd shellkit && command git push && git status
+	command git push && git status
 
 git-status:
 	cd shellkit && git status

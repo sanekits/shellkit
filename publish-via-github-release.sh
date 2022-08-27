@@ -17,7 +17,6 @@ canonpath() {
 Script=$(canonpath "$0")
 Scriptdir=$(command dirname "$Script")
 
-#stub Script=${Script} Scriptdir=${Scriptdir}
 Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
 
 die() {

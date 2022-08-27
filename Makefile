@@ -95,8 +95,9 @@ pre-publish: apply-version build git-status-clean update-tag check-kit tmp/${set
 
 publish-common: pre-publish ${HOME}/downloads ${publish_extra_files}
 	@# Common logic needed to publish a kit
-	cp tmp/${setup_script} ${HOME}/downloads
-	cp ${publish_extra_files} ${HOME}/downloads || :
+	cp tmp/${setup_script} ${HOME}/downloads/
+	@echo Copying extra files: ${publish_extra_files}
+	cp ${publish_extra_files} ${HOME}/downloads/ || :
 	@echo "MANUAL STEP: Script ${HOME}/downloads/${setup_script} should be attached to the release artifacts"
 
 git-pull:

@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-status git-pull
+.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-status
 
 # Given:
 #   - Kit has files to be packaged
@@ -57,9 +57,6 @@ tmp/${setup_script} tmp/latest.sh build-hash: $(build_depends)
 	-git add build-hash && git commit build-hash -m "build-hash updated"
 	@echo "Done: ${kitname}:${version} $$(cat build-hash)"
 
-git-pull:
-	cd shellkit && git pull
-	git pull
 
 create-kit: shellkit/.git
 	./shellkit/create-kit.sh

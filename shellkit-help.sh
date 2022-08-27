@@ -3,25 +3,47 @@
 
 
 canonpath() {
-    type -t realpath.sh &>/dev/null && {
+    builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
         return
     }
-    # Ok for rough work only.  Prefer realpath.sh if it's on the path.
-    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+    builtin type -t readlink &>/dev/null && {
+        command readlink -f "$@"
+        return
+    }
+    # Fallback: Ok for rough work only, does not handle some corner cases:
+    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
 }
 
 scriptName="$(canonpath $0)"
 scriptDir=$(command dirname -- "${scriptName}")
+scriptBase=$(command basename -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR(shellkit-help.sh): $*" >&2
+    builtin echo "ERROR(${scriptBase}): $*" >&2
     builtin exit 1
 }
 
 stub() {
-   builtin echo "  <<< STUB[$*] >>> " >&2
+    # Print debug output to stderr.  Call like this:
+    #   stub ${FUNCNAME[0]}.$LINENO item item item
+    #
+    builtin echo -n "  <<< STUB" >&2
+    for arg in "$@"; do
+        echo -n "[${arg}] " >&2
+    done
+    echo " >>> " >&2
 }
+
+# Defines bpoint():
+_DEBUG_=${_DEBUG_:-0}
+[[ $_DEBUG_ -eq 1 ]] && {
+    echo "_DEBUG_ enabled, sourceMeRun.taskrc is loading." >&2
+    [[ -f ~/bin/sourceMeRun.taskrc ]] && source ~/bin/sourceMeRun.taskrc
+} || {
+    bpoint() { : ;} # no-op
+}
+
 
 parse_help_items() {
     # Given a stream of shell text with #help markers, print a "help item" for
@@ -29,7 +51,7 @@ parse_help_items() {
     while read line; do
         echo -n $line | tr -d '(){' | sed -e 's/^function //'
         read helptext
-        echo "$helptext" | sed -s 's/^\s*#help/\t/'
+        echo "$helptext" | sed 's/^\s*#help/\t/'
         read _
     done < <(command grep -E -B1 '\s*#help ')
 
@@ -84,14 +106,25 @@ set_kitname() {
     #   Kitname exists for current dir or parent
     # Then:
     #   Set $Kitname from ./Kitname contents
+    local _f=${FUNCNAME[0]}
     [[ -d $scriptDir ]] || return
-    [[ -f ${scriptDir}/Kitname ]] && { read Kitname < ${scriptDir}/Kitname; return; }
-    [[ -f ${scriptDir}/../Kitname ]] && { read Kitname < ${scriptDir}/../Kitname; return; }
-    false
+    Kitname=$(
+        cd $scriptDir || die $_f.1
+        xdir=$scriptDir
+        for n in {1..3}; do
+            [[ -f ${xdir}/Kitname ]] && {
+                command cat ${xdir}/Kitname
+                exit
+            }
+            xdir=$(dirname $xdir)
+        done
+        false
+    )
+    [[ -n $Kitname ]] || die $_f.2
 }
 
 main() {
-    set_kitname
+    [[ -n $Kitname ]] || set_kitname || die "Failed to set kitname in ${FUNCNAME[0]}.$LINENO"
     parse_help_from_scripts "$@"
     [[ -f ~/.local/bin/${Kitname}/_symlinks_ ]] && {
         (

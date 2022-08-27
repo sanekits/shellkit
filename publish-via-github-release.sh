@@ -59,5 +59,5 @@ if [[ -z $sourceMe ]]; then
     (
         cd $(dirname $destFile) && ln -sf $(basename $destFile) latest.sh
     )
-    [[ $? -eq 0 ]] && echo "Done: upload $PWD/tmp/${Kitname}-setup-${version}.sh to Github release page (https://github.com/sanekits/${Kitname}/releases)"
+    [[ $? -eq 0 ]] && echo "Done: upload $PWD/tmp/${Kitname}-setup-${version}.sh to Github release page "
 fi

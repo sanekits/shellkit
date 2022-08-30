@@ -117,7 +117,7 @@ git-status:
 	cd shellkit && git status
 	git status
 
-release-draft tmp/draft-url: push-tag
+release-draft tmp/draft-url: git-push push-tag
 	gh release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
 	cat tmp/draft-url
 

@@ -43,11 +43,11 @@ git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)'
 
 next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md
 
-
-build: tmp/latest.sh tmp/${setup_script} build-hash
-
 clean:
-	rm -rf tmp/*
+	rm -rf tmp
+
+build: tmp/${setup_script} build-hash
+
 
 tmp/${setup_script} tmp/latest.sh build-hash: $(build_depends)
 	mkdir -p ./tmp && \
@@ -93,17 +93,13 @@ apply-version: version $(version_depends)
 pre-publish: apply-version build git-status-clean update-tag check-kit tmp/${setup_script}
 	@echo pre-publish completed OK
 
-publish-common: git-pull pre-publish ${HOME}/downloads ${publish_extra_files}
+publish-common: git-pull pre-publish ${publish_extra_files}
 	@# Common logic needed to publish a kit
-	cp tmp/${setup_script} ${HOME}/downloads/
 	@echo Copying extra files: ${publish_extra_files}
 	@bash -c '[[ -n "${publish_extra_files}" ]] \
 		&& { \
-			cp ${publish_extra_files} ${HOME}/downloads/; \
-			echo "MANUAL STEP: ${publish_extra_files} in ${HOME}/downloads should be attached to the release artifacts"; \
+			cp ${publish_extra_files} ${HOME}/tmp/; \
 		} || { :; } '
-	@echo "MANUAL STEP: Script ${HOME}/downloads/${setup_script} should be attached to the release artifacts"
-
 
 git-pull:
 	cd shellkit && command git pull && git status

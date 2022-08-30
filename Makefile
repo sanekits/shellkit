@@ -131,6 +131,6 @@ release-draft-upload: release-draft
 	cat tmp/draft-url
 
 release-list:
-	gh release list | sort -n
+	gh release list | sort -n | tail -n 8
 	gh release view ${version}
 

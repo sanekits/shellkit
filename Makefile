@@ -121,7 +121,7 @@ release-draft tmp/draft-url:
 	gh release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
 	cat tmp/draft-url
 
-release-draft-upload: tmp/draft-url
+release-draft-upload: release-draft tmp/draft-url
 	gh release view ${version}
 	gh release delete-asset --yes ${version} ${kitname}-setup-${version}.sh ${publish_extra_files} || :
 	gh release upload ${version} tmp/${kitname}-setup-${version}.sh ${publish_extra_files}

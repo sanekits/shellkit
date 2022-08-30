@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-status
+.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft release-draft-upload
 
 # Given:
 #   - Kit has files to be packaged

@@ -113,12 +113,19 @@ git-status:
 	cd shellkit && git status
 	git status
 
-release-draft tmp/draft-url: git-push push-tag
+release-draft: build git-push push-tag
+	rm tmp/draft-url || :
+	gh release delete --yes ${version} || :
 	gh release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
+	# Wait until the release shows up on view...
+	while ! gh release view ${version}; do \
+		sleep 4  # Takes time for the release to be processed! \
+	done
 	cat tmp/draft-url
 
-release-draft-upload: release-draft tmp/draft-url
+release-draft-upload: release-draft
 	gh release view ${version}
+	@echo publish_extra_files=${publish_extra_files}
 	gh release delete-asset --yes ${version} ${kitname}-setup-${version}.sh ${publish_extra_files} || :
 	gh release upload ${version} tmp/${kitname}-setup-${version}.sh ${publish_extra_files}
 	cat tmp/draft-url

@@ -11,12 +11,12 @@ kit_depends := \
     bin/<Kitname>.bashrc \
     bin/<Kitname>.sh
 
+.PHONY: publish
 
-publish: pre-publish
-	@# TODO: you can customize publication by adding steps here (before publish-common)
-	make publish-common release-draft-upload
-	@# (After common publication)
-	gh release list | sort -n
+
+publish: pre-publish publish-common release-draft-upload release-list
+
+
 	@echo ">>>> publish complete OK.  <<<"
 	@echo ">>>> Manually publish the release from this URL when satisfied, <<<<"
 	@echo ">>>> and then change ./version to avoid accidental confusion. <<<<"

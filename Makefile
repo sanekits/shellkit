@@ -97,11 +97,11 @@ publish-common: git-pull pre-publish ${HOME}/downloads ${publish_extra_files}
 	@# Common logic needed to publish a kit
 	cp tmp/${setup_script} ${HOME}/downloads/
 	@echo Copying extra files: ${publish_extra_files}
-	[[ -n "${publish_extra_files}" ]] \
+	bash -c '[[ -n "${publish_extra_files}" ]] \
 		&& { \
 			cp ${publish_extra_files} ${HOME}/downloads/; \
 			echo "MANUAL STEP: ${publish_extra_files} in ${HOME}/downloads should be attached to the release artifacts"; \
-		} || { :; }
+		} || { :; } '
 	@echo "MANUAL STEP: Script ${HOME}/downloads/${setup_script} should be attached to the release artifacts"
 
 

@@ -38,7 +38,7 @@ build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile 
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
-git_remote := $(shell git remote -v | grep -E '\(push\)' | awk '{print $$1}')
+git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk {'print $$3'})
 git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')
 
 next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md

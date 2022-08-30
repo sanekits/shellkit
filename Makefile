@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft release-draft-upload
+.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft release-draft-upload release-list
 
 # Given:
 #   - Kit has files to be packaged
@@ -123,4 +123,7 @@ release-draft-upload: release-draft tmp/draft-url
 	gh release upload ${version} tmp/${kitname}-setup-${version}.sh ${publish_extra_files}
 	cat tmp/draft-url
 
+release-list:
+	gh release list | sort -n
+	gh release view ${version}
 

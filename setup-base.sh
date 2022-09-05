@@ -167,7 +167,7 @@ install_realpath_sh() {
 ensure_HOME() {
     [[ -n $HOME ]] || { true; return; }
     [[ $UID == 0 ]] && { export HOME=/root; return; }
-    [[ -d /home/$(whoami) ]] && { export HOME=$(whoami); return; }
+    [[ -d /home/$(whoami) ]] && { export HOME=/home/$(whoami); return; }
     die "ensure_HOME() failed"
 }
 

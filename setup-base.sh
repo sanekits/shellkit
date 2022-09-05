@@ -7,6 +7,11 @@ die() {
     exit 1
 }
 
+die2() {
+    echo "ERROR(2,setup-base.sh): $@" >&2
+    exit 2
+}
+
 canonpath() {
     builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
@@ -59,24 +64,27 @@ path_fixup_local_bin() {
     ( # Create a semaphore script in ~/.local/bin.  If we can run it without specifying path, we're good.
         builtin cd
         semaphore=_semaphore_$$
-        localbin_semaphore > ~/.local/bin/${semaphore}
+        mkdir -p ${HOME}/.local/bin
+        [[ -d ${HOME}/.local/bin ]] || die2 "Failed to create ${HOME}/.local/bin"
+        localbin_semaphore > ${HOME}/.local/bin/${semaphore}
         command chmod +x ~/.local/bin/${semaphore}
-        if ! command bash -l -c "${semaphore}"; then
+        if ! command bash -l -c "${semaphore}" &>/dev/null; then
             exit 1  # .local/bin is not on the PATH
         fi
         rm ~/.local/bin/${semaphore}
-        true
+        true # .local/bin is already on the PATH
     ) && { true; return; }
+    [[ $? -eq 2 ]] && die "path_fixup_local_bin failed"
     echo "~/.local/bin is not on the path. Fixing profile." >&2
     (
         local profile=.bash_profile
-        [[ -f ~/${profile} ]] || profile=.profile
+        [[ -f ${HOME}/${profile} ]] || profile=.profile
         tmp_profile="profile-tmp.$$"
-        echo "export PATH=\${HOME}/.local/bin:\$PATH # Added by ${kitname}" > "${tmp_profile}" || die 202
+        echo "export PATH=\${HOME}/.local/bin:\$PATH # Added by ${kitname}" > "${tmp_profile}" || die2 3092
         [[ -e ~/${profile} ]] && cat ~/${profile} >> "${tmp_profile}"
         mv "$tmp_profile" ~/${profile} || die 203
-        echo "WARNING: ~/.local/bin was added to your PATH by modifying ${PWD}/${profile}.  It is up to you to ensure that the contents of ~/.local/bin are benign!" >&2
-    )
+        echo "WARNING: ${HOME}/.local/bin was added to your PATH by modifying ~/${profile}.  (Using this dir is a normal convention, but changes to the PATH can sometimes produce unwanted side-effects.)" >&2
+    ) || die
 
     reload_reqd=true
 }
@@ -155,8 +163,17 @@ install_realpath_sh() {
     command cp ${Kitname}/shellkit/realpath.sh ./realpath.sh || die "Failed installing realpath.sh"
 }
 
+
+ensure_HOME() {
+    [[ -n $HOME ]] || { true; return; }
+    [[ $UID == 0 ]] && { export HOME=/root; return; }
+    [[ -d /home/$(whoami) ]] && { export HOME=$(whoami); return; }
+    die "ensure_HOME() failed"
+}
+
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
+    ensure_HOME
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
         if [[ -e $HOME/.local/bin/${Kitname} ]]; then
             # Here we're protecting the kit maintainer: if they replace the ~/.local/bin/{kitname} dir
@@ -175,7 +192,7 @@ main_base() {
         die "cannot run setup.sh from ${HOME}/.local/bin"
     fi
     builtin cd ${HOME}/.local/bin/${Kitname} || die "101"
-    command rm -rf ./* || die "102"
+    command rm -rf ./* ./.* &>/dev/null
     [[ -d ${scriptDir} ]] || die "bad scriptDir [$scriptDir]"
     command cp -r ${scriptDir}/* ./ || die "failed copying from ${scriptDir} to $PWD"
     builtin cd .. # Now were in .local/bin

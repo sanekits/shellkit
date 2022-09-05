@@ -33,7 +33,8 @@ none:
 
 -include ./make-kit.mk  # Project-specific makefile
 
-build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh $( shell find bin/* )
+build_depends += $(shell find bin/* -type f)
+build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
 
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
@@ -45,6 +46,10 @@ next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-n
 
 clean:
 	rm -rf tmp
+
+.PHONY: print-build-depends
+print-build-depends:
+	@echo build_depends=$(build_depends)
 
 build: tmp/${setup_script} build-hash
 

@@ -33,7 +33,7 @@ none:
 
 -include ./make-kit.mk  # Project-specific makefile
 
-build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
+build_depends += $(wildcard bin/*) $(wildcard bin/shellkit/*) shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh $( shell find bin/* )
 
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)

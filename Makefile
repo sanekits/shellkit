@@ -31,14 +31,15 @@ none:
 	fi
 	@echo There is no default target. Try create-kit to start from scratch.
 
+version := $(shell cat ./version)
+kitname := $(shell cat bin/Kitname)
+setup_script := $(kitname)-setup-$(version).sh
+
 -include ./make-kit.mk  # Project-specific makefile
 
 build_depends += $(shell find bin/* -type f)
 build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
 
-version := $(shell cat ./version)
-kitname := $(shell cat bin/Kitname)
-setup_script := $(kitname)-setup-$(version).sh
 git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk {'print $$3'})
 git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')
 
@@ -54,10 +55,10 @@ print-build-depends:
 build: tmp/${setup_script} build-hash
 
 
-tmp/${setup_script} tmp/latest.sh build-hash: $(build_depends)
+tmp/$(setup_script) tmp/latest.sh build-hash: $(build_depends)
 	mkdir -p ./tmp && \
-    shellkit/makeself.sh --follow --base64 ./bin tmp/${setup_script} "${kitname} ${version} setup" ./setup.sh
-	ln -sf ${setup_script} tmp/latest.sh
+    shellkit/makeself.sh --follow --base64 ./bin tmp/$(setup_script) "${kitname} ${version} setup" ./setup.sh
+	ln -sf $(setup_script) tmp/latest.sh
 	/bin/bash -x tmp/latest.sh --list 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//' > build-hash
 	-git add build-hash && git commit build-hash -m "build-hash updated"
 	@echo "Done: ${kitname}:${version} $$(cat build-hash)"
@@ -95,7 +96,7 @@ apply-version: version $(version_depends)
 	# version dependencies
 	shellkit/apply-version.sh ${apply_version_extra_files}
 
-pre-publish: apply-version build git-status-clean update-tag check-kit tmp/${setup_script}
+pre-publish: apply-version build git-status-clean update-tag check-kit tmp/$(setup_script)
 	@echo pre-publish completed OK
 
 publish-common: git-pull pre-publish ${publish_extra_files}
@@ -131,8 +132,8 @@ release-draft: build git-push push-tag
 release-draft-upload: release-draft
 	gh release view ${version}
 	@echo publish_extra_files=${publish_extra_files}
-	gh release delete-asset --yes ${version} ${kitname}-setup-${version}.sh ${publish_extra_files} || :
-	gh release upload ${version} tmp/${kitname}-setup-${version}.sh ${publish_extra_files}
+	gh release delete-asset --yes ${version} $(setup_script) ${publish_extra_files} || :
+	gh release upload ${version} tmp/$(setup_script) ${publish_extra_files}
 	cat tmp/draft-url
 
 release-list:

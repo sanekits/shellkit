@@ -171,6 +171,19 @@ ensure_HOME() {
     die "ensure_HOME() failed"
 }
 
+fixup_local_bin_perms() {
+    [[ -d ${HOME}/.local/bin ]] || { true; return; }
+    command chmod oug+rx ${HOME}/.local/bin || return $(die "Failed setting +rx on ~/.local/bin")
+    local item
+    # Any shellkit tools should have a ~/.local/bin/*/shellkit/ dir, that's how we recognize them:
+    for item in $(command ls -d ${HOME}/.local/bin/*/shellkit/); do
+        (
+            builtin cd $(command dirname -- ${item}) \
+            && chmod og+rX . -R;
+        )
+    done
+}
+
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
     ensure_HOME
@@ -201,6 +214,7 @@ main_base() {
     shrc_fixup || die "104"
     install_realpath_sh || die "104.5"
     install_symlinks || die "105"
+    fixup_local_bin_perms || die "106"
     echo "${Kitname} installed in ~/.local/bin: OK"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2
 }

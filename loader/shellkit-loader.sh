@@ -17,10 +17,15 @@ scriptDir=$(command dirname -- "${scriptName}")
 
 PS4='\033[0;33m+(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
+
+
 die() {
     builtin echo "ERROR($(basename ${scriptName})): $*" >&2
     builtin exit 1
 }
+
+SHELLKIT_LOAD_DISABLE=1 source ${scriptDir}/shellkit-loader.bashrc
+[[ -n $SHELLKIT_LOADER_VER ]] || die "Missing ${scriptDir}/shellkit-loader.bashrc or SHELLKIT_LOADER_VER not defined"
 
 stub() {
     {
@@ -38,8 +43,8 @@ get_kit_depends() {
     # When the dependency is '-', it's just filler to ensure
     # all dependents are included in the output.
     local kitnames=()
-    kitnames+=( $(command ls */Kitname | command xargs dirname) )
-    #stub kitnames "${kitnames[@]}"
+    kitnames+=( $(command ls */Kitname 2>/dev/null | command xargs dirname 2>/dev/null) )
+
     for kit in ${kitnames[@]}; do
         printf "${kit} -\n"
         [[ -f ${kit}/load-depends ]] && {
@@ -86,6 +91,9 @@ main() {
 }
 
 [[ -z ${sourceMe} ]] && {
+    case $1 in
+        --version|-v) echo $SHELLKIT_LOADER_VER; exit 0;;
+    esac
     main "$@"
     builtin exit
 }

@@ -43,8 +43,14 @@ loadsort-set3: tmp
 	diff tmp/set3.out set3/out.ref
 	diff tmp/set3.err set3/err.ref
 
-..PHONY: test
-test: loadsort-set1 loadsort-set2
+.PHONY: init-sim
+init-sim: tmp
+	cd set1 && source ./shellkit-loader.bashrc > ../tmp/init-sim.out
+	diff tmp/init-sim.out set1/init-sim.ref
+
+
+.PHONY: test
+test: loadsort-set1 loadsort-set2 loadsort-set3 init-sim
 	echo All tests pass
 
 

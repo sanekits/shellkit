@@ -7,6 +7,7 @@
 - Kits can declare dependencies and the loader will
     - topo-sort during init
     - shout if a cycle is found
+    - shout if a dependency is not installed
     - ensure that each kit is loaded exactly once per init cycle
 
 ## Design
@@ -17,7 +18,8 @@
     - This is installed as a plain file, not a symlink
     - This declares SHELLKIT_LOADER_VER as a simple int
     - The installer never overwrites a newer version of this
-    - This strives to be light (inject fewest definitions into environment)
+    - This strives to be light (inject minimal definitions into environment)
+    - Defines a SHELLKIT_LOAD_DISABLE flag which turns off running the load process if defined
 
 - shellkit_loader() function:
     - This is defined in shellkit-loader.bashrc
@@ -43,7 +45,8 @@
     - This permits blank lines
 
 - setup-base.sh: [existing script]
-    - This is modified to install shellkit-loader.bashrc + shellkit-loader.sh
+    - This is modified to install shellkit-loader.bashrc + shellkit-loader.sh.  Both are installed as a matched pair.
+    - This calls the old "shellkit-loader.sh --version" before overwriting it, protecting newer from overwrite by older
 
 - create-kit.sh: [existing script]
     - This is modified to add a boilerplate [kit]/bin/load-depends file into the new kit

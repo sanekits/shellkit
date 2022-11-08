@@ -39,7 +39,7 @@ get_kit_depends() {
     # all dependents are included in the output.
     local kitnames=()
     kitnames+=( $(command ls */Kitname | command xargs dirname) )
-    stub kitnames "${kitnames[@]}"
+    #stub kitnames "${kitnames[@]}"
     for kit in ${kitnames[@]}; do
         printf "${kit} -\n"
         [[ -f ${kit}/load-depends ]] && {
@@ -50,14 +50,33 @@ get_kit_depends() {
     done
 }
 
+format_tsort_errs() {
+    local first=true
+    while read line; do
+        $first && {
+            printf "ERROR($(basename ${scriptName})): dependency sorting error -- "
+            first=false
+        }
+        printf "   ${line}\n"
+    done >&2
+}
+
+get_sorted_kitnames() {
+    get_kit_depends | tsort 2> >( format_tsort_errs ) | grep -v '^-$'
+}
+
 main() {
-    stub shellkit-loader-args "$@"
+    #stub shellkit-loader-args "$@"
     [[ -n SHLOADER_DIR ]] && {
         cd $SHLOADER_DIR || die Failed to cd to $SHLOADER_DIR;
     } || {
         cd ${HOME}/.local/bin || die Failed to cd to ${HOME}/.local/bin
     }
-    get_kit_depends | tsort
+    while read kit; do
+        [[ -f ${kit}/${kit}.bashrc ]] && {
+            echo "${kit}/${kit}.bashrc"
+        }
+    done < <(get_sorted_kitnames)
     true
 }
 

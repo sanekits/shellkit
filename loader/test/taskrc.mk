@@ -19,13 +19,25 @@ help:
 	@echo -e "CURDIR=\t\t$(CURDIR)"
 	@echo -e "taskrc_dir=\t$${taskrc_dir}"
 
-.PHONY: loadsort-set1
-loadsort-set1:
-	SHLOADER_DIR=./set1 ../shellkit-loader.sh
+tmp:
+	mkdir tmp
 
+.PHONY: loadsort-set1
+loadsort-set1: tmp
+	# set1 should have no errors:
+	SHLOADER_DIR=./set1 ../shellkit-loader.sh 2> tmp/set1.err > tmp/set1.out
+	diff tmp/set1.out set1/out.ref
+	diff tmp/set1.err set1/err.ref
+
+.PHONY: loadsort-set2
+loadsort-set2: tmp
+	# set2 has a cycle from kit3 -> kit5 -> kit3
+	SHLOADER_DIR=./set2 ../shellkit-loader.sh 2> tmp/set2.err > tmp/set2.out
+	diff tmp/set2.out set2/out.ref
+	diff tmp/set2.err set2/err.ref
 
 ..PHONY: test
-test: loadsort-set1
+test: loadsort-set1 loadsort-set2
 	echo All tests pass
 
 

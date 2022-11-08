@@ -1,0 +1,3 @@
+ERROR(shellkit-loader.sh): dependency sorting error --    tsort: -: input contains a loop:
+   tsort: kit5
+   tsort: kit3

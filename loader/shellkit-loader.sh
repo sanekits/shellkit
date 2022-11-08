@@ -43,7 +43,7 @@ get_kit_depends() {
     for kit in ${kitnames[@]}; do
         printf "${kit} -\n"
         [[ -f ${kit}/load-depends ]] && {
-            # We one or more lines like [kitname] [dependency]
+            # We want one or more lines like [kitname] [dependency]
             # as input for tsort:
             grep -Ev ' *#' ${kit}/load-depends | sed "s/^/${kit} /"
         }
@@ -73,6 +73,11 @@ main() {
         cd ${HOME}/.local/bin || die Failed to cd to ${HOME}/.local/bin
     }
     while read kit; do
+        [[ -d ${kit} ]] || {
+            echo "ERROR($(basename $scriptName)): shellkit ${kit} is referenced as a dependency but is not installed in ${PWD}"
+            echo "   Run \"shpm install ${kit}\" to resolve this error."
+            continue
+        } >&2
         [[ -f ${kit}/${kit}.bashrc ]] && {
             echo "${kit}/${kit}.bashrc"
         }

@@ -36,6 +36,13 @@ loadsort-set2: tmp
 	diff tmp/set2.out set2/out.ref
 	diff tmp/set2.err set2/err.ref
 
+.PHONY: loadsort-set3
+loadsort-set3: tmp
+	# set3 has a cycle from kit3 -> kit5 -> kit3
+	SHLOADER_DIR=./set3 ../shellkit-loader.sh 2> tmp/set3.err > tmp/set3.out
+	diff tmp/set3.out set3/out.ref
+	diff tmp/set3.err set3/err.ref
+
 ..PHONY: test
 test: loadsort-set1 loadsort-set2
 	echo All tests pass

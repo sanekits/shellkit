@@ -74,6 +74,21 @@ create-kit: shellkit/.git
 check-kit:
 	./shellkit/check-kit.sh
 
+.PHONY: shellkit-conformity-image
+shellkit-conformity-image:
+	shellkit/make-conformity-image.sh
+
+.PHONY: conformity-check
+conformity-check: shellkit-conformity-image
+    # See docs/conformity-testing.md
+	docker run --rm -i \
+		-v $$PWD:/workspace \
+		-v $$HOME:/host_home:ro \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		--name shellkit-conformity-checker \
+		shellkit-conformity:$(version) \
+		shellkit/conformity-check.sh
+
 erase-kit:
 	# Destroy everything but the scaffolding.
 	shellkit/erase-kit.sh

@@ -38,7 +38,9 @@ setup_script := $(kitname)-setup-$(version).sh
 -include ./make-kit.mk  # Project-specific makefile
 
 build_depends += $(shell find bin/* -type f)
-build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
+build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh
+build_depends += shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
+build_depends += shellkit/loader/shellkit-loader.bashrc shellkit/loader/shellkit-loader.sh
 
 git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk {'print $$3'})
 git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')

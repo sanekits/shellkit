@@ -72,7 +72,7 @@ get_sorted_kitnames() {
 
 main() {
     #stub shellkit-loader-args "$@"
-    [[ -n SHLOADER_DIR ]] && {
+    [[ -n $SHLOADER_DIR ]] && {
         cd $SHLOADER_DIR || die Failed to cd to $SHLOADER_DIR;
     } || {
         cd ${HOME}/.local/bin || die Failed to cd to ${HOME}/.local/bin

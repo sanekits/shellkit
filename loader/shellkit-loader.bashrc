@@ -7,7 +7,7 @@
 #
 #  Normally this file is installed by shellkit automatically.
 
-SHELLKIT_LOADER_VER=1
+SHELLKIT_LOADER_VER=2
 
 shellkit_loader() {
     # Load all shellkit init files (e.g. ~/.local/bin/<kit>/<kit>.bashrc),
@@ -19,16 +19,19 @@ shellkit_loader() {
         [[ -f ${HOME}/.local/bin/shellkit-loader.sh ]] && {
             loaderDir=${HOME}/.local/bin
         } ||  {
-            echo "ERROR: can't find shellkit-loader.sh"
+            builtin echo "ERROR: can't find shellkit-loader.sh"
             return;
         }
     }
     local initfile
     local loaderScript
     loaderScript=${loaderDir}/shellkit-loader.sh
+    local orgDir=$PWD
+    builtin cd "$loaderDir"
     for initfile in $( SHLOADER_DIR="$loaderDir" ${loaderScript} ); do
         source "$initfile"
     done
+    builtin cd ${orgDir}
 }
 
 [[ -z $SHELLKIT_LOAD_DISABLE ]] && {

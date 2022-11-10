@@ -184,6 +184,22 @@ fixup_local_bin_perms() {
     done
 }
 
+install_loader() {
+    (
+        cd ${HOME}/.local/bin || die 701
+        for ff in shellkit-loader.{bashrc,sh}; do
+            [[ -f ${Kitname}/shellkit/${ff} ]] || die "Kit ${Kitname} is missing ${ff}"
+        done
+        ourVersion=$( ${Kitname}/shellkit/shellkit-loader.sh --version )
+        curVersion=$( ./shellkit-loader.sh --version 2>/dev/null || echo 0 )
+        [[ $curVersion -gt $ourVersion ]] && {
+            exit 0  # We won't overwrite a newer version
+        }
+        cp ${Kitname}/shellkit/shellkit-loader.{bashrc,sh} ./ || die
+
+    ) || exit 1
+}
+
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
     ensure_HOME
@@ -214,6 +230,7 @@ main_base() {
     shrc_fixup || die "104"
     install_realpath_sh || die "104.5"
     install_symlinks || die "105"
+    install_loader || die "105.5"
     fixup_local_bin_perms || die "106"
     echo "${Kitname} installed in ~/.local/bin: OK"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2

@@ -1,5 +1,6 @@
 #!/bin/bash
 # make-conformity-image.sh
+# see docs/conformity-testing.md
 
 scriptName="$(readlink -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
@@ -25,10 +26,11 @@ stub() {
 
 main() {
     stub "main" "$@"
+    exit 1
 }
 
 [[ -z ${sourceMe} ]] && {
-    stub "${FUNCNAME[0]}.${LINENO}" "$@" "calling main() "
+    stub "${FUNCNAME[0]}.${LINENO}" "$@" "calling main()"
     main "$@"
     builtin exit
 }

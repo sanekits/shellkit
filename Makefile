@@ -76,7 +76,7 @@ check-kit:
 
 .PHONY: shellkit-conformity-image
 shellkit-conformity-image:
-	shellkit/make-conformity-image.sh
+	shellkit/make-conformity-image.sh --version $(version)
 
 .PHONY: conformity-check
 conformity-check: shellkit-conformity-image

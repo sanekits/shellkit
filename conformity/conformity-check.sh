@@ -78,7 +78,7 @@ main() {
     run_localbin_checks $Kitname || die "Failed secondary localbin checks"
     bash -l -c true || die "Failed secondary shell init check"
 
-    bash -l  # STUB to open a shell for inspection
+    # bash -l  # STUB to open a shell for inspection
 
     echo "${scriptName} completed: OK"
 }

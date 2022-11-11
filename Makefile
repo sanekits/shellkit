@@ -94,7 +94,7 @@ conformity-check: shellkit-conformity-image
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		--name $(conform_cont_name) \
 		$(conform_img_name) \
-		shellkit/conformity/conformity-check.sh --kit $(kitname)
+		bash -l -c 'shellkit/conformity/conformity-check.sh --kit $(kitname)'
 
 erase-kit:
 	# Destroy everything but the scaffolding.

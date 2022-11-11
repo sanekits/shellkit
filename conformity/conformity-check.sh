@@ -44,12 +44,16 @@ run_localbin_checks() {
             [[ -f $ini ]] || die 104 Missing $ini
             source $ini || die 105 Failed sourcing $ini
             [[ $( type -t ${Kitname}-semaphore ) -eq function ]] || die 106 ${Kitname}-semaphore function missing
-
-            [[ -n $SHELLKIT_LOADER_VER ]] || die "107 \$SHELLKIT_LOADER_VER not defined.  Is shellkit-loader.bashrc installed?"
-
-
+            (
+                source ~/.bashrc
+                [[ -n $SHELLKIT_LOADER_VER ]] || die "107 \$SHELLKIT_LOADER_VER not defined.  Is shellkit-loader.bashrc hooked in ~/.bashrc?"
+            ) || exit 1
+            grep -EL "${Kitname}\.bashrc" ~/.bashrc && die "108 ${Kitname}.bashrc is mentioned in ~/.bashrc, this legacy hook should be removed."
 
         } 2>&1 | sed 's/^/  :/'
+        # Let's ensure that shellkit-loader is sourced exactly once:
+        local loader_count=$(grep -E 'source .*shellkit-loader\.bashrc' ${HOME}/.bashrc | wc -l )
+        [[ $loader_count == 1 ]] || die "shellkit-loader.bashrc should be hooked exactly once in ~/.bashrc, not $loader_count times"
         echo
     ) || exit 1
 }
@@ -63,11 +67,20 @@ main() {
         esac
         shift
     done
-    tmp/latest.sh || die "Failed to run $PWD/tmp/latest.sh"
 
-    run_localbin_checks $Kitname
+    # We run the installer twice, doing checks after each.  Expect that
+    # idempotence is honored:
+    tmp/latest.sh || die "Failed primary install test"
+    run_localbin_checks $Kitname || die "Failed primary localbin checks"
+    bash -l -c true || die "Failed primary shell init check"
 
-    Kitname=$Kitname bash -l
+    tmp/latest.sh || die "Failed secondary install test"
+    run_localbin_checks $Kitname || die "Failed secondary localbin checks"
+    bash -l -c true || die "Failed secondary shell init check"
+
+    bash -l  # STUB to open a shell for inspection
+
+    echo "${scriptName} completed: OK"
 }
 
 

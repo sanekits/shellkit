@@ -18,6 +18,9 @@ kit_depends := \
 # However kits which predate this change must be manually updated to comply,
 # and you can add this dependency to their `make-kit.mk` to automate
 # compliance checking with pre-publication.
+#
+# TODO: when all legacy kits are migrated, move this dependency
+# into the main Makefile
 publish-common: conformity-check
 
 publish: pre-publish publish-common release-draft-upload release-list

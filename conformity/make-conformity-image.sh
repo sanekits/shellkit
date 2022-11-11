@@ -36,9 +36,14 @@ main() {
     done
     [[ $Version =~ [0-9]+\.[0-9]+\.[0-9]+$ ]] || die "--version must match nn.nn.nn, not [$Version]"
     [[ -n $image_name ]] || die "--image undefined"
+    local dockerfile=Dockerfile.gen
+    curl -I artprod.dev.bloomberg.com &>/dev/null && {
+        dockerfile=Dockerfile.bb
+    }
+    echo "dockerfile=$dockerfile"
 
     cd shellkit/conformity &&
-        docker build . -t "$image_name" ||
+        docker build -f $dockerfile -t "$image_name" . ||
            die "Failed building $image_name"
 
         echo "Docker image $image_name built: OK"

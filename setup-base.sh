@@ -93,11 +93,16 @@ path_fixup_local_bin() {
 shrc_fixup() {
     # We must ensure that ~/.bashrc sources shellkit-loader.bashrc exactly once.
     (
-        source ${HOME}/.bashrc
+        PS1="::" source ${HOME}/.bashrc
         [[ -n "$SHELLKIT_LOADER_VER" ]] && exit 0
 
          # Add hook into .bashrc
-        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)" >> ${HOME}/.bashrc
+        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)\n" >> ${HOME}/.bashrc
+    ) || { false; return; }
+    (
+        # Verify that it took:
+        PS1=":::" source ~/.bashrc;
+        [[ -n $SHELLKIT_LOADER_VER ]] || die "Failed shellkit-loader.bashrc hook installation"
     )
     reload_reqd=true
 }

@@ -42,13 +42,16 @@ run_localbin_checks() {
             [[ -x ./realpath.sh ]] || die 103 Missing ./realpath.sh;
             ini=${Kitname}/${Kitname}.bashrc
             [[ -f $ini ]] || die 104 Missing $ini
+            PS1="::"
             source $ini || die 105 Failed sourcing $ini
             [[ $( type -t ${Kitname}-semaphore ) -eq function ]] || die 106 ${Kitname}-semaphore function missing
             (
+                PS1="::"
                 source ~/.bashrc
                 [[ -n $SHELLKIT_LOADER_VER ]] || die "107 \$SHELLKIT_LOADER_VER not defined.  Is shellkit-loader.bashrc hooked in ~/.bashrc?"
             ) || exit 1
-            grep -EL "${Kitname}\.bashrc" ~/.bashrc && die "108 ${Kitname}.bashrc is mentioned in ~/.bashrc, this legacy hook should be removed."
+
+            grep -E "${Kitname}\.bashrc" ~/.bashrc && die "108 ${Kitname}.bashrc is mentioned in ~/.bashrc, this legacy hook should be removed."
 
         } 2>&1 | sed 's/^/  :/'
         # Let's ensure that shellkit-loader is sourced exactly once:
@@ -74,11 +77,12 @@ main() {
     run_localbin_checks $Kitname || die "Failed primary localbin checks"
     bash -l -c true || die "Failed primary shell init check"
 
+    #echo "STUB SHELL:"; bash -l  # STUB to open a shell for inspection
+
     tmp/latest.sh || die "Failed secondary install test"
     run_localbin_checks $Kitname || die "Failed secondary localbin checks"
     bash -l -c true || die "Failed secondary shell init check"
 
-    # bash -l  # STUB to open a shell for inspection
 
     echo "${scriptName} completed: OK"
 }

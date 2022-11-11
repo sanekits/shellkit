@@ -7,7 +7,7 @@
 #
 #  Normally this file is installed by shellkit automatically.
 
-SHELLKIT_LOADER_VER=2
+export SHELLKIT_LOADER_VER=2
 
 shellkit_loader() {
     # Load all shellkit init files (e.g. ~/.local/bin/<kit>/<kit>.bashrc),

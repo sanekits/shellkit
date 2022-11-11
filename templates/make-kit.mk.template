@@ -13,6 +13,12 @@ kit_depends := \
 
 .PHONY: publish
 
+# Migration note: new kits will automatically get conformity checks to
+# ensure integration protocol compliance with shellkit-loader (see docs/loader.md)
+# However kits which predate this change must be manually updated to comply,
+# and you can add this dependency to their `make-kit.mk` to automate
+# compliance checking with pre-publication.
+publish-common: conformity-check
 
 publish: pre-publish publish-common release-draft-upload release-list
 

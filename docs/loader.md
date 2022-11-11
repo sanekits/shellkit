@@ -51,4 +51,8 @@
 - create-kit.sh: [existing script]
     - This is modified to add a boilerplate [kit]/bin/load-depends file into the new kit
 
+-  templates/make-kit.mk.template
+    - This adds a pre-publish dependency on the compliance check target for new kits
+    - Legacy kits can add this target manually once their compliance is upgraded
+
 

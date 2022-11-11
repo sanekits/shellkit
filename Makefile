@@ -34,6 +34,8 @@ none:
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
+conform_img_name := shellkit-conformity:$(version)
+conform_cont_name := shellkit-conformity-checker
 
 -include ./make-kit.mk  # Project-specific makefile
 
@@ -76,18 +78,23 @@ check-kit:
 
 .PHONY: shellkit-conformity-image
 shellkit-conformity-image:
-	shellkit/make-conformity-image.sh --version $(version)
+	shellkit/conformity/make-conformity-image.sh --image $(conform_img_name) --version $(version)
+
+.PHONY: conformity-install-kit
+conformity-install-kit:
+	docker exec
+
 
 .PHONY: conformity-check
 conformity-check: shellkit-conformity-image
     # See docs/conformity-testing.md
-	docker run --rm -i \
-		-v $$PWD:/workspace \
+	docker run --rm -it \
+		-v $$PWD:/workspace:ro \
 		-v $$HOME:/host_home:ro \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		--name shellkit-conformity-checker \
-		shellkit-conformity:$(version) \
-		shellkit/conformity-check.sh
+		--name $(conform_cont_name) \
+		$(conform_img_name) \
+		shellkit/conformity/conformity-check.sh --kit $(kitname)
 
 erase-kit:
 	# Destroy everything but the scaffolding.

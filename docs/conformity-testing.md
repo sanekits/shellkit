@@ -23,7 +23,7 @@ Thus the need for conformity checking to detect problems.
     - `/workspace` maps to the root source folder of the kit
 
 - `make-conformity-image.sh`
-    - This creates `shellkit-conformity:{version}`
+    - This creates docker image `shellkit-conformity:{version}`
     - This expects a `--version n.n.n` arg, which is used to tag the image
-    - This does not configure any non-root user.  Generally we expect to run conformity on root
+    - This does not configure any non-root user.  Generally we expect to run conformity as root
     - This sets `/workspace` as WORKDIR in the image

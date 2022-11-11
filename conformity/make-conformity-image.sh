@@ -25,8 +25,24 @@ stub() {
 }
 
 main() {
-    stub "main" "$@"
-    exit 1
+    local image_name
+    while [[ -n $1 ]]; do
+        case "$1" in
+            --version) Version=$2; shift;;
+            --image) image_name=$2; shift;;
+            *) die "Expected --version n.n.n";;
+        esac
+        shift
+    done
+    [[ $Version =~ [0-9]+\.[0-9]+\.[0-9]+$ ]] || die "--version must match nn.nn.nn, not [$Version]"
+    [[ -n $image_name ]] || die "--image undefined"
+
+    cd shellkit/conformity &&
+        docker build . -t "$image_name" ||
+           die "Failed building $image_name"
+
+        echo "Docker image $image_name built: OK"
+    true
 }
 
 [[ -z ${sourceMe} ]] && {

@@ -73,7 +73,11 @@ create-kit: shellkit/.git
 	NONTFATAL_HASH_MISMATCH=1 ./shellkit/check-kit.sh
 	@echo "Kit created OK.  See ${next_steps_doc} for next steps."
 
-check-kit:
+
+check-shellkit:
+	xdir=./shellkit/loader/test; make -C $$xdir -f taskrc.mk test
+
+check-kit: check-shellkit
 	./shellkit/check-kit.sh
 
 .PHONY: shellkit-conformity-image

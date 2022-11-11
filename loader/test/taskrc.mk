@@ -51,6 +51,6 @@ init-sim: tmp
 
 .PHONY: test
 test: loadsort-set1 loadsort-set2 loadsort-set3 init-sim
-	echo All tests pass
+	echo All tests pass in $(absdir)
 
 

@@ -1,2 +1,2 @@
-ERROR(shellkit-loader.sh): shellkit kit5 is referenced as a dependency but is not installed in /home/lmatheson4/projects/shellkit.workspace/bashics/shellkit/loader/test/set3
+ERROR(shellkit-loader.sh): shellkit kit5 is referenced as a dependency but is not installed in ~/.local/bin/kit5
    Run "shpm install kit5" to resolve this error.

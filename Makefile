@@ -36,6 +36,7 @@ kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
 conform_img_name := shellkit-conformity:$(version)
 conform_cont_name := shellkit-conformity-checker
+Ghx := gh
 
 -include ./make-kit.mk  # Project-specific makefile
 
@@ -149,22 +150,22 @@ git-status:
 
 release-draft: build git-push push-tag
 	rm tmp/draft-url || :
-	gh release delete --yes ${version} || :
-	gh release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
+	$(Ghx) release delete --yes ${version} || :
+	$(Ghx) release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
 	# Wait until the release shows up on view...
-	while ! gh release view ${version}; do \
+	while ! $(Ghx) release view ${version}; do \
 		sleep 4  # Takes time for the release to be processed! \
 	done
 	cat tmp/draft-url
 
 release-draft-upload: release-draft
-	gh release view ${version}
+	$(Ghx) release view ${version}
 	@echo publish_extra_files=${publish_extra_files}
-	gh release delete-asset --yes ${version} $(setup_script) ${publish_extra_files} || :
-	gh release upload ${version} tmp/$(setup_script) ${publish_extra_files}
+	$(Ghx) release delete-asset --yes ${version} $(setup_script) ${publish_extra_files} || :
+	$(Ghx) release upload ${version} tmp/$(setup_script) ${publish_extra_files}
 	cat tmp/draft-url
 
 release-list:
-	gh release list | sort -n | tail -n 8
-	gh release view ${version}
+	$(Ghx) release list | sort -n | tail -n 8
+	$(Ghx) release view ${version}
 

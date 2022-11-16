@@ -94,8 +94,8 @@ conformity-install-kit:
 conformity-check: shellkit-conformity-image
     # See docs/conformity-testing.md
 	docker run --rm -it \
-		-v $$PWD:/workspace:ro \
-		-v $$HOME:/host_home:ro \
+		-v $$ShellkitWorkspace:/workspace:ro \
+		-v $$HostHome:/host_home:ro \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		--name $(conform_cont_name) \
 		$(conform_img_name) \

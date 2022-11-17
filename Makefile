@@ -14,6 +14,8 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
+SHELL=bash
+
 .PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft release-draft-upload release-list
 
 # Given:
@@ -57,7 +59,19 @@ clean:
 print-build-depends:
 	@echo build_depends=$(build_depends)
 
-build: tmp/${setup_script} build-hash
+
+.PHONY: shellkit-ref-validate
+shellkit-ref-validate:
+	@# If there's no shellkit-ref file, then the embedded shellkit branch should be 'main'
+	@# If there IS a shellkit-ref file, then the embedded shellkit branch should match
+	@die() { echo "ERROR: $$*" >&2; exit 1; }; \
+	shkbranch="$$( cd shellkit &>/dev/null && git rev-parse --abbrev-ref HEAD )" ; \
+		decbranch=$$(cat ./shellkit-ref 2>/dev/null); \
+		[[ -n $$decbranch ]] && { [[ $$decbranch == $$shkbranch ]] && exit 0 || die "current shellkit branch [$$shkbranch] does not match ./shellkit-ref [$$decbranch]"; }; \
+		[[ $$shkbranch == main ]] || die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
+
+
+build: shellkit-ref-validate tmp/${setup_script} build-hash
 
 
 tmp/$(setup_script) tmp/latest.sh build-hash: $(build_depends)

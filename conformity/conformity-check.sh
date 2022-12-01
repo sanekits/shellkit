@@ -89,6 +89,12 @@ main() {
 
 
 [[ -z ${sourceMe} ]] && {
+
+    case $- in
+        *i*) ;;
+        *)  die "$scriptName must run interactively (e.g. bash -i $scriptName)" ;;
+    esac
+
     stub "${FUNCNAME[0]}.${LINENO}" "calling main()" "$@"
     main "$@"
     builtin exit

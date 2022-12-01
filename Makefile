@@ -36,11 +36,13 @@ none:
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
-conform_img_name := shellkit-conformity:$(version)
-conform_cont_name := shellkit-conformity-checker
 Ghx := gh
+ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f $${dir}/.shellkit-workspace ]] && { ( cd $${dir}; pwd ); break; }; done )
 
 -include ./make-kit.mk  # Project-specific makefile
+
+ConformityDockerComponent=shellkit-conformity
+ConformityDockerMakefile=$(ShellkitWorkspace)/.devcontainer/shellkit-component.mk
 
 build_depends += $(shell find bin/* -type f)
 build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh
@@ -95,25 +97,16 @@ check-shellkit:
 check-kit: check-shellkit
 	./shellkit/check-kit.sh
 
-.PHONY: shellkit-conformity-image
-shellkit-conformity-image:
-	shellkit/conformity/make-conformity-image.sh --image $(conform_img_name) --version $(version)
-
-.PHONY: conformity-install-kit
-conformity-install-kit:
-	docker exec
-
 
 .PHONY: conformity-check
-conformity-check: shellkit-conformity-image
+conformity-check: $(ConformityDockerMakefile)
     # See docs/conformity-testing.md
-	docker run --rm -it \
-		-v $$ShellkitWorkspace:/workspace:ro \
-		-v $$HostHome:/host_home:ro \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		--name $(conform_cont_name) \
-		$(conform_img_name) \
-		bash -l -c 'shellkit/conformity/conformity-check.sh --kit $(kitname)'
+	make -f $(ConformityDockerMakefile) Component=$(ConformityDockerComponent) image
+	make -f $(ConformityDockerMakefile) \
+		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro" \
+		Component=$(ConformityDockerComponent) \
+		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname)" \
+		run
 
 erase-kit:
 	# Destroy everything but the scaffolding.

@@ -1,4 +1,0 @@
-# Dockerfile.gen
-FROM ubuntu:focal
-
-WORKDIR /workspace

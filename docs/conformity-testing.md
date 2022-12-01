@@ -11,19 +11,10 @@ Thus the need for conformity checking to detect problems.
 
 ## Components
 
-- `Makefile` target `shellkit-conformity-image`:
-    - This invokes the `make-shellkit-conformity-image.sh` script
-    - This requires an image named `shellkit-conformity:{version}`, where `version` is the `shellkit/version` file
-
 - `Makefile` target `conformity-check`:
-    - This make target depends on target `shellkit-conformity-image`
-    - This runs `shellkit/conformity-check.sh` in the container
-    - This maps volumes `host_home` and `docker.sock` and `/workspace` into the container
-    - This creates the container `shellkit-conformity-checker`
-    - `/workspace` maps to the root source folder of the kit
+    - This make target depends on the shared shellkit-component.mk *(see
+        `${ShellkitWorkspace}/.devcontainer/shellkit-component.mk` )*
+    - This runs `shellkit/conformity-check.sh` in the shellkit-conformity container
+    - Volumes `host_home` and `/workspace` are mapped into the container
+    - `/workspace` maps to the `ShellkitWorkspace` folder
 
-- `make-conformity-image.sh`
-    - This creates docker image `shellkit-conformity:{version}`
-    - This expects a `--version n.n.n` arg, which is used to tag the image
-    - This does not configure any non-root user.  Generally we expect to run conformity as root
-    - This sets `/workspace` as WORKDIR in the image

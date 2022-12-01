@@ -92,12 +92,17 @@ path_fixup_local_bin() {
 
 shrc_fixup() {
     # We must ensure that ~/.bashrc sources shellkit-loader.bashrc exactly once.
+    case $- in
+        *i*) ;;
+        *) die "shrc_fixup() must run in an interactive shell"
+    esac
     (
-        PS1="::" source ${HOME}/.bashrc
+        PS1="::" source ~/.bashrc
         [[ -n "$SHELLKIT_LOADER_VER" ]] && exit 0
 
          # Add hook into .bashrc
-        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)\n" >> ${HOME}/.bashrc
+        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)" >> ${HOME}/.bashrc
+
     ) || { false; return; }
     (
         # Verify that it took:
@@ -105,6 +110,13 @@ shrc_fixup() {
         [[ -n $SHELLKIT_LOADER_VER ]] || die "Failed shellkit-loader.bashrc hook installation"
     )
     reload_reqd=true
+}
+
+run_bashrc_hook() {
+    # We must force bash to re-invoke our own script in interactive mode
+    # to ensure that .bashrc loads -- otherwise an early-exit check of $- could spoil
+    # the hook test
+    bash -i $Script --run-bashrc-hook
 }
 
 install_symlinks() {
@@ -199,6 +211,11 @@ install_loader() {
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
     ensure_HOME
+    [[ $1 == --run-bashrc-hook ]] && {
+        shift
+        shrc_fixup "$@"
+        exit
+    }
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
         if [[ -e $HOME/.local/bin/${Kitname} ]]; then
             # Here we're protecting the kit maintainer: if they replace the ~/.local/bin/{kitname} dir
@@ -226,7 +243,7 @@ main_base() {
     install_realpath_sh || die "104.5"
     install_symlinks || die "105"
     install_loader || die "105.5"
-    shrc_fixup || die "105.7"
+    run_bashrc_hook || die "105.7"
     fixup_local_bin_perms || die "106"
     echo "${Kitname} installed in ~/.local/bin: OK"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2

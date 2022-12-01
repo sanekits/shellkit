@@ -42,7 +42,7 @@ ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f $
 -include ./make-kit.mk  # Project-specific makefile
 
 ConformityDockerComponent=shellkit-conformity
-ConformityDockerMakefile=$(ShellkitWorkspace)/.devcontainer/shellkit-component.mk
+ComponentDockerMakefile=$(ShellkitWorkspace)/.devcontainer/shellkit-component.mk
 
 build_depends += $(shell find bin/* -type f)
 build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh
@@ -99,10 +99,10 @@ check-kit: check-shellkit
 
 
 .PHONY: conformity-check
-conformity-check: $(ConformityDockerMakefile)
+conformity-check: $(ComponentDockerMakefile)
     # See docs/conformity-testing.md
-	make -f $(ConformityDockerMakefile) Component=$(ConformityDockerComponent) image
-	make -f $(ConformityDockerMakefile) \
+	make -f $(ComponentDockerMakefile) Component=$(ConformityDockerComponent) image
+	make -f $(ComponentDockerMakefile) \
 		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro" \
 		Component=$(ConformityDockerComponent) \
 		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname)" \

@@ -5,7 +5,7 @@
 
 scriptName="$(readlink -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
-PS4='\033[0;33m+(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+PS4='\033[0;33m+$?(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 
 die() {
@@ -28,15 +28,19 @@ stub() {
 
 run_localbin_checks() {
     local Kitname=$1
+    local errorId=$2
+    [[ -n $errorId ]] || die "No \$errorId provided to run_localbin_checks"
+    echo "run_localbin_checks $Kitname $errorId" >&2
     (
         cd ~/.local/bin || die 101
         echo "~/.local/bin tests:"
         {
+            PATH="$( bash -lic 'echo $PATH')"
             local path_ok=false
             IFS=$':'; for p in $PATH; do
                 [[ $p == ${HOME}/.local/bin ]] && { path_ok=true; break; }
             done; unset IFS
-            [[ $path_ok ]] || die 101.5 ${HOME}/.local/bin is not on the PATH
+            $path_ok || die 101.5 ${HOME}/.local/bin is not on the PATH
             [[ -L ./${Kitname}-version.sh ]] || die 102 Missing ${Kitname}-version.sh;
             [[ $(./${Kitname}-version.sh) =~ [0-9]+\.[0-9]+\.[0-9]+$ ]] || die "$PWD/${Kitname}-version.sh returned unexpected output"
             [[ -x ./realpath.sh ]] || die 103 Missing ./realpath.sh;
@@ -51,14 +55,20 @@ run_localbin_checks() {
                 [[ -n $SHELLKIT_LOADER_VER ]] || die "107 \$SHELLKIT_LOADER_VER not defined.  Is shellkit-loader.bashrc hooked in ~/.bashrc?"
             ) || exit 1
 
-            grep -E "${Kitname}\.bashrc" ~/.bashrc && die "108 ${Kitname}.bashrc is mentioned in ~/.bashrc, this legacy hook should be removed."
+            command grep -E "${Kitname}\.bashrc" ~/.bashrc && {
+                die "108 ${Kitname}.bashrc is mentioned in ~/.bashrc, this legacy hook should be removed."
+            } || true;
 
         } 2>&1 | sed 's/^/  :/'
+        [[ ${PIPESTATUS[0]} -eq 0 ]] || {
+            #echo "STUB SHELL $errorId"; bash -l  # STUB to open a shell for inspection
+            die "${errorId}.1"
+        }
         # Let's ensure that shellkit-loader is sourced exactly once:
-        local loader_count=$(grep -E 'source .*shellkit-loader\.bashrc' ${HOME}/.bashrc | wc -l )
+        local loader_count=$(command grep -E 'source .*shellkit-loader\.bashrc' ${HOME}/.bashrc | wc -l )
         [[ $loader_count == 1 ]] || die "shellkit-loader.bashrc should be hooked exactly once in ~/.bashrc, not $loader_count times"
         echo
-    ) || exit 1
+    ) || die "${errorId}.2"
 }
 
 main() {
@@ -74,13 +84,13 @@ main() {
     # We run the installer twice, doing checks after each.  Expect that
     # idempotence is honored:
     tmp/latest.sh || die "Failed primary install test"
-    run_localbin_checks $Kitname || die "Failed primary localbin checks"
+    run_localbin_checks $Kitname 208 || die "Failed primary localbin checks phase 208"
     bash -l -c true || die "Failed primary shell init check"
 
     #echo "STUB SHELL:"; bash -l  # STUB to open a shell for inspection
 
     tmp/latest.sh || die "Failed secondary install test"
-    run_localbin_checks $Kitname || die "Failed secondary localbin checks"
+    run_localbin_checks $Kitname 209 || die "Failed secondary localbin checks phase 209"
     bash -l -c true || die "Failed secondary shell init check"
 
 

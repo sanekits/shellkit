@@ -73,7 +73,7 @@ shellkit-ref-validate:
 		[[ $$shkbranch == main ]] || die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
 
 
-build: shellkit-ref-validate tmp/${setup_script} build-hash
+build: shellkit-ref-validate tmp/$(setup_script) build-hash
 
 
 tmp/$(setup_script) tmp/latest.sh build-hash: $(build_depends)

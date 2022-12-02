@@ -36,11 +36,18 @@ none:
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
+Ghx := gh
+ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f $${dir}/.shellkit-workspace ]] && { ( cd $${dir}; pwd ); break; }; done )
 
 -include ./make-kit.mk  # Project-specific makefile
 
+ConformityDockerComponent=shellkit-conformity
+ComponentDockerMakefile=$(ShellkitWorkspace)/.devcontainer/shellkit-component.mk
+
 build_depends += $(shell find bin/* -type f)
-build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
+build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh
+build_depends += shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
+build_depends += shellkit/loader/shellkit-loader.bashrc shellkit/loader/shellkit-loader.sh
 
 git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk {'print $$3'})
 git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')
@@ -66,7 +73,7 @@ shellkit-ref-validate:
 		[[ $$shkbranch == main ]] || die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
 
 
-build: shellkit-ref-validate tmp/${setup_script} build-hash
+build: shellkit-ref-validate tmp/$(setup_script) build-hash
 
 
 tmp/$(setup_script) tmp/latest.sh build-hash: $(build_depends)
@@ -83,8 +90,23 @@ create-kit: shellkit/.git
 	NONTFATAL_HASH_MISMATCH=1 ./shellkit/check-kit.sh
 	@echo "Kit created OK.  See ${next_steps_doc} for next steps."
 
-check-kit:
+
+check-shellkit:
+	xdir=./shellkit/loader/test; make -C $$xdir -f taskrc.mk test
+
+check-kit: check-shellkit
 	./shellkit/check-kit.sh
+
+
+.PHONY: conformity-check
+conformity-check: $(ComponentDockerMakefile)
+    # See docs/conformity-testing.md
+	make -f $(ComponentDockerMakefile) Component=$(ConformityDockerComponent) image
+	make -f $(ComponentDockerMakefile) \
+		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro" \
+		Component=$(ConformityDockerComponent) \
+		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname)" \
+		run
 
 erase-kit:
 	# Destroy everything but the scaffolding.
@@ -135,22 +157,22 @@ git-status:
 
 release-draft: build git-push push-tag
 	rm tmp/draft-url || :
-	gh release delete --yes ${version} || :
-	gh release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
+	$(Ghx) release delete --yes ${version} || :
+	$(Ghx) release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
 	# Wait until the release shows up on view...
-	while ! gh release view ${version}; do \
+	while ! $(Ghx) release view ${version}; do \
 		sleep 4  # Takes time for the release to be processed! \
 	done
 	cat tmp/draft-url
 
 release-draft-upload: release-draft
-	gh release view ${version}
+	$(Ghx) release view ${version}
 	@echo publish_extra_files=${publish_extra_files}
-	gh release delete-asset --yes ${version} $(setup_script) ${publish_extra_files} || :
-	gh release upload ${version} tmp/$(setup_script) ${publish_extra_files}
+	$(Ghx) release delete-asset --yes ${version} $(setup_script) ${publish_extra_files} || :
+	$(Ghx) release upload ${version} tmp/$(setup_script) ${publish_extra_files}
 	cat tmp/draft-url
 
 release-list:
-	gh release list | sort -n | tail -n 8
-	gh release view ${version}
+	$(Ghx) release list | sort -n | tail -n 8
+	$(Ghx) release view ${version}
 

@@ -1,0 +1,2 @@
+ERROR(shellkit-loader.sh): shellkit kit5 is referenced as a dependency but is not installed in ~/.local/bin/kit5
+   Run "shpm install kit5" to resolve this error.

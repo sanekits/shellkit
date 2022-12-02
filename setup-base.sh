@@ -1,6 +1,7 @@
 #!/bin/bash
 # setup-base.sh for shellkit.  Source this from the kit's own setup.sh
 
+PS4='\033[0;33m+(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 die() {
     echo "ERROR(setup-base.sh): $@" >&2
@@ -90,25 +91,32 @@ path_fixup_local_bin() {
 }
 
 shrc_fixup() {
-    # We must ensure that ~/.bashrc sources our [Kitname].bashrc script exactly once.
-    # This depends on ${Kitname}-semaphore() being a defined function in the ${Kitname}.bashrc script
-    local xtype=$( /bin/bash -l -c "PS1=1; source ~/.bashrc; type -t ${Kitname}-semaphore" )
-    if [[ "${xtype}" == *function* ]]; then
-        return
-    fi
-    local rcpath="${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc"
-    [[ -f ${rcpath} ]] || die "Can't find ${rcpath} in shrc_fixup()"
+    # We must ensure that ~/.bashrc sources shellkit-loader.bashrc exactly once.
+    case $- in
+        *i*) ;;
+        *) die "shrc_fixup() must run in an interactive shell"
+    esac
     (
-        source "${rcpath}"
-        [[ $(type -t ${Kitname}-semaphore) == *function* ]] || die "${rcpath} does not define required function ${Kitname}-semaphore in shrc_fixup()"
-    ) || die
+        PS1="::" source ~/.bashrc
+        [[ -n "$SHELLKIT_LOADER_VER" ]] && exit 0
 
-    ( # Add hook to .bashrc
-        echo "[[ -n \$PS1 && -f \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc ]] && source \${HOME}/.local/bin/${Kitname}/${Kitname}.bashrc # Added by ${Kitname}-setup.sh"
-        echo
-    ) >> ${HOME}/.bashrc
+         # Add hook into .bashrc
+        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)" >> ${HOME}/.bashrc
 
+    ) || { false; return; }
+    (
+        # Verify that it took:
+        PS1=":::" source ~/.bashrc;
+        [[ -n $SHELLKIT_LOADER_VER ]] || die "Failed shellkit-loader.bashrc hook installation"
+    )
     reload_reqd=true
+}
+
+run_bashrc_hook() {
+    # We must force bash to re-invoke our own script in interactive mode
+    # to ensure that .bashrc loads -- otherwise an early-exit check of $- could spoil
+    # the hook test
+    bash -i $Script --run-bashrc-hook
 }
 
 install_symlinks() {
@@ -184,9 +192,30 @@ fixup_local_bin_perms() {
     done
 }
 
+install_loader() {
+    (
+        cd ${HOME}/.local/bin || die 701
+        for ff in shellkit-loader.{bashrc,sh}; do
+            [[ -f ${Kitname}/shellkit/${ff} ]] || die "Kit ${Kitname} is missing ${ff}"
+        done
+        ourVersion=$( ${Kitname}/shellkit/shellkit-loader.sh --version )
+        curVersion=$( ./shellkit-loader.sh --version 2>/dev/null || echo 0 )
+        [[ $curVersion -gt $ourVersion ]] && {
+            exit 0  # We won't overwrite a newer version
+        }
+        cp ${Kitname}/shellkit/shellkit-loader.{bashrc,sh} ./ || die
+
+    ) || exit 1
+}
+
 main_base() {
     [[ -z $Script ]] && die "\$Script not defined in main_base()"
     ensure_HOME
+    [[ $1 == --run-bashrc-hook ]] && {
+        shift
+        shrc_fixup "$@"
+        exit
+    }
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
         if [[ -e $HOME/.local/bin/${Kitname} ]]; then
             # Here we're protecting the kit maintainer: if they replace the ~/.local/bin/{kitname} dir
@@ -211,9 +240,10 @@ main_base() {
     builtin cd .. # Now were in .local/bin
     command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "102.2"
     path_fixup_local_bin ${Kitname} || die "102.5"
-    shrc_fixup || die "104"
     install_realpath_sh || die "104.5"
     install_symlinks || die "105"
+    install_loader || die "105.5"
+    run_bashrc_hook || die "105.7"
     fixup_local_bin_perms || die "106"
     echo "${Kitname} installed in ~/.local/bin: OK"
     $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2

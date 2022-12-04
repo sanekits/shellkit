@@ -100,7 +100,7 @@ check-kit: check-shellkit
 
 .PHONY: conformity-check
 conformity-check: $(ComponentDockerMakefile)
-    # See docs/conformity-testing.md
+    # See shellkit/docs/conformity-testing.md
 	make -f $(ComponentDockerMakefile) Component=$(ConformityDockerComponent) image
 	make -f $(ComponentDockerMakefile) \
 		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro" \

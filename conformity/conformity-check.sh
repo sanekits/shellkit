@@ -7,10 +7,16 @@ scriptName="$(readlink -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 PS4='\033[0;33m+$?(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
+keep_shell=false # Use --keep-shell so we don't close on completion or die
 
 die() {
     builtin echo "ERROR($(basename ${scriptName})): $*" >&2
+    $keep_shell && keep
     builtin exit 1
+}
+
+keep() {
+    Ps1Tail="keep:" bash -i
 }
 
 stub() {
@@ -76,6 +82,7 @@ main() {
     while [[ -n $1 ]]; do
         case $1 in
             --kit) Kitname=$2; shift ;;
+            --keep-shell) keep_shell=true ;;
             *) die Unknown arg: "$*";;
         esac
         shift
@@ -107,6 +114,7 @@ main() {
 
     stub "${FUNCNAME[0]}.${LINENO}" "calling main()" "$@"
     main "$@"
+    $keep_shell && keep || :
     builtin exit
 }
 command true

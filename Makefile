@@ -14,7 +14,7 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-SHELL=bash
+SHELL=/bin/bash
 
 .PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft release-draft-upload release-list
 
@@ -102,10 +102,12 @@ check-kit: check-shellkit
 conformity-check: $(ComponentDockerMakefile)
     # See shellkit/docs/conformity-testing.md
 	make -f $(ComponentDockerMakefile) Component=$(ConformityDockerComponent) image
+	@# You can add KeepShell=1 to avoid closing the container after conformity checks
+	[[ -n "${KeepShell}" ]] && stay="--keep-shell"; \
 	make -f $(ComponentDockerMakefile) \
 		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro" \
 		Component=$(ConformityDockerComponent) \
-		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname)" \
+		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname) $$stay" \
 		run
 
 erase-kit:

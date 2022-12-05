@@ -104,11 +104,17 @@ conformity-check: $(ComponentDockerMakefile)
 	make -f $(ComponentDockerMakefile) Component=$(ConformityDockerComponent) image
 	@# You can add KeepShell=1 to avoid closing the container after conformity checks
 	[[ -n "${KeepShell}" ]] && stay="--keep-shell"; \
+	tmpLocalBin=$$( mktemp -d -p /tmp fakelocalbin-XXXXX ); \
+		mkdir -p $$tmpLocalBin; \
+		chown $$(id -u):$$(id -u) $$tmpLocalBin; \
+		chmod oug+rx $$tmpLocalBin; \
+		echo "Host tmpLocalBin=$$tmpLocalBin"; \
 	make -f $(ComponentDockerMakefile) \
-		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro" \
+		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro -v $$tmpLocalBin:/home/vscode/.local/bin" \
 		Component=$(ConformityDockerComponent) \
 		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname) $$stay" \
-		run
+		run; \
+	[[ -z "${KeepShell}" ]] && [[ -d $$tmpLocalBin ]] && rm -rf $$tmpLocalBin || :
 
 erase-kit:
 	# Destroy everything but the scaffolding.

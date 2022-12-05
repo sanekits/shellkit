@@ -102,15 +102,25 @@ check-kit: check-shellkit
 conformity-check: $(ComponentDockerMakefile)
     # See shellkit/docs/conformity-testing.md
 	make -f $(ComponentDockerMakefile) Component=$(ConformityDockerComponent) image
-	@# You can add KeepShell=1 to avoid closing the container after conformity checks
+
+    # You can add KeepShell=1 to avoid closing the container after conformity checks
+    #
+    #  Below we map the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
+    #  that points to a temp dir.  This allows the dev to easily follow the changes
+    #  in the container made to the install root.
+    #
+    #  If KeepShell=1, the temp dir is not destroyed on container exit.
+    #
 	[[ -n "${KeepShell}" ]] && stay="--keep-shell"; \
 	tmpLocalBin=$$( mktemp -d -p /tmp fakelocalbin-XXXXX ); \
 		mkdir -p $$tmpLocalBin; \
 		chown $$(id -u):$$(id -u) $$tmpLocalBin; \
 		chmod oug+rx $$tmpLocalBin; \
+		rm $$(dirname $$tmpLocalBin)/fakelocalbin-latest; \
+		ln -sf $$tmpLocalBin $$(dirname $$tmpLocalBin)/fakelocalbin-latest; \
 		echo "Host tmpLocalBin=$$tmpLocalBin"; \
 	make -f $(ComponentDockerMakefile) \
-		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro -v $$tmpLocalBin:/home/vscode/.local/bin" \
+		Volumes="-v $(ShellkitWorkspace)/$(kitname):/workspace:ro -v $$tmpLocalBin:/home/vscode/.local/bin -v $(ShellkitWorkspace):/shellkit-workspace" \
 		Component=$(ConformityDockerComponent) \
 		Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname) $$stay" \
 		run; \

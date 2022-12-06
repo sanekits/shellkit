@@ -182,7 +182,7 @@ ensure_HOME() {
 fixup_local_bin_perms() {
     [[ -d ${HOME}/.local/bin ]] || { true; return; }
     command chmod oug+rx ${HOME}/.local/bin || return $(die "Failed setting +rx on ~/.local/bin")
-    command chmod oug+rx ${HOME}/.local || echo "Warning: failed setting +rx on ~/.local" >&2
+    command chmod oug+rx ${HOME}/.local 2>/dev/null || echo "Warning: failed setting +rx on ~/.local" >&2
     local item
     # Any shellkit tools should have a ~/.local/bin/*/shellkit/ dir, that's how we recognize them:
     for item in $(command ls -d ${HOME}/.local/bin/*/shellkit/); do

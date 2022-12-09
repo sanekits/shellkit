@@ -72,8 +72,9 @@ shellkit-ref-validate:
 		[[ -n $$decbranch ]] && { [[ $$decbranch == $$shkbranch ]] && exit 0 || die "current shellkit branch [$$shkbranch] does not match ./shellkit-ref [$$decbranch]"; }; \
 		[[ $$shkbranch == main ]] || die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
 
+tree-setup: shellkit-ref-validate
 
-build: shellkit-ref-validate tmp/$(setup_script) build-hash
+build: tree-setup tmp/$(setup_script) build-hash
 
 
 tmp/$(setup_script) tmp/latest.sh build-hash: $(build_depends)

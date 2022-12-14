@@ -6,6 +6,8 @@
 
 scriptName="$(command realpath.sh -f $0)"
 scriptDir=$(command dirname -- "${scriptName}")
+PS4='\033[0;33m+$?(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
 
 die() {
     builtin echo "ERROR($(basename $scriptName)): $*" >&2
@@ -92,7 +94,9 @@ main() {
             (
                 builtin cd shellkit \
                 && command ln -sf ../../shellkit/setup-base.sh ./ \
-                && command ln -sf ../../shellkit/realpath.sh ./
+                && command ln -sf ../../shellkit/realpath.sh ./ \
+                && command ln -sf ../../shellkit/loader/shellkit-loader.bashrc ./ \
+                && command ln -sf ../../shellkit/loader/shellkit-loader.sh ./ \
             ) || die main.2.3
             # Replace <Kitname> placeholder text and possibly rename files in the created it:
             for filename in kitname-version.sh kitname.bashrc kitname.sh _symlinks_ setup.sh; do

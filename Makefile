@@ -41,7 +41,6 @@ ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f $
 
 -include ./make-kit.mk  # Project-specific makefile
 
-ConformityDockerComponent=shellkit-conformity
 
 build_depends += $(shell find bin/* -type f)
 build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh
@@ -101,16 +100,15 @@ check-kit: check-shellkit
 .PHONY: conformity-check
 conformity-check:
     # You can add KeepShell=1 to avoid closing the container after conformity checks
-    #
-    #  Below we map the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
+
+    #  container-test.sh maps the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
     #  that points to a temp dir.  This allows the dev to easily follow the changes
     #  in the container made to the install root.
-    #
-    #  If KeepShell=1, the temp dir is not destroyed on container exit.
 	[[ -n "${KeepShell}" ]] && stay="--keep-shell"; \
-	Command="bash -i shellkit/conformity/conformity-check.sh --kit $(kitname)" \
+	Command="shellkit/conformity/conformity-check.sh --kit $(kitname)" \
 	shellkit/container-test.sh --component shellkit-conformity $$stay
 
+    #  If KeepShell=1, the temp dir is not destroyed on container exit.
 	[[ -z "${KeepShell}" ]] && [[ -d $$tmpLocalBin ]] && rm -rf $$tmpLocalBin || :
 
 erase-kit:

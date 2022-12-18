@@ -87,6 +87,8 @@ main() {
         esac
         shift
     done
+    [[ $# -eq 0 ]] || die "Unknown args: $*"
+    [[ -n $Kitname ]] || die "No --kit [name] provided"
 
     # We run the installer twice, doing checks after each.  Expect that
     # idempotence is honored:

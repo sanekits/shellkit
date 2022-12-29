@@ -72,7 +72,7 @@ main() {
     mkdir -p $tmpLocalBin
     chown $(id -u):$(id -u) $tmpLocalBin || die 103 bad chown
     chmod oug+rx $tmpLocalBin || die 104 bad chown
-    rm $(dirname $tmpLocalBin)/fakelocalbin-latest &>/dev/null
+    command rm $(dirname $tmpLocalBin)/fakelocalbin-latest &>/dev/null || true
     ln -sf $tmpLocalBin $(dirname $tmpLocalBin)/fakelocalbin-latest || die 105 bad ln
 
     # Create+launch the container:

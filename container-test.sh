@@ -39,6 +39,7 @@ KeepShell=false
 set -ue
 ComponentDockerMakefile=${ShellkitWorkspace}/.devcontainer/shellkit-component.mk
 Component=
+Read_only_workspace=":ro"
 
 die() {
     builtin echo "ERROR($(basename ${scriptName})): $*" >&2
@@ -61,7 +62,8 @@ stub() {
 }
 
 main() {
-    [[ -f $ComponentDockerMakefile ]] || die 100
+    [[ -f $ComponentDockerMakefile ]] \
+        || die 100
 
     # Create/update the image:
     make -f ${ComponentDockerMakefile} Component=${Component} image \
@@ -70,13 +72,17 @@ main() {
     # Prepare the fake .local/bin:
 	local tmpLocalBin=$( mktemp -d -p /tmp fakelocalbin-XXXXX )
     mkdir -p $tmpLocalBin
-    chown $(id -u):$(id -u) $tmpLocalBin || die 103 bad chown
-    chmod oug+rx $tmpLocalBin || die 104 bad chown
-    command rm $(dirname $tmpLocalBin)/fakelocalbin-latest &>/dev/null || true
-    ln -sf $tmpLocalBin $(dirname $tmpLocalBin)/fakelocalbin-latest || die 105 bad ln
+    chown $(id -u):$(id -u) $tmpLocalBin \
+        || die 103 bad chown
+    chmod oug+rx $tmpLocalBin \
+        || die 104 bad chown
+    command rm $(dirname $tmpLocalBin)/fakelocalbin-latest &>/dev/null \
+        || true
+    ln -sf $tmpLocalBin $(dirname $tmpLocalBin)/fakelocalbin-latest \
+        || die 105 bad ln
 
     # Create+launch the container:
-	local volumes="-v ${PWD}:/workspace:ro  \
+	local volumes="-v ${PWD}:/workspace${Read_only_workspace}  \
         -v ${tmpLocalBin}:/home/vscode/.local/bin  \
         -v ${ShellkitWorkspace}:/shellkit-workspace"
     echo "Command=${Command}"
@@ -95,17 +101,23 @@ set +u
         case $1 in
             --component) shift; Component="$1";;
             --keep-shell|-k) KeepShell=true ;;
+            --writeable-workspace|-w)  Read_only_workspace="" ;;
             *) die "Unknown arg: $1";;
         esac
         shift
     done
     set -u
-    [[ $# -eq 0 ]] || die "Unknown args: $*"
-    [[ -n $Component ]] || die "No --component [name] specified"
+    [[ $# -eq 0 ]] \
+        || die "Unknown args: $*"
+    [[ -n $Component ]] \
+        || die "No --component [name] specified"
 
     set +u;
-    $KeepShell && [[ -n $Command ]] && Command="${Command}; bash"
-    [[ -n $Command ]] || Command=bash;
+    $KeepShell \
+        && [[ -n $Command ]] \
+            && Command="${Command}; bash"
+    [[ -n $Command ]] \
+        || Command=bash;
     set -u
 
     main

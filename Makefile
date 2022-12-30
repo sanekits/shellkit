@@ -99,17 +99,25 @@ check-kit: check-shellkit
 
 .PHONY: conformity-check
 conformity-check:
-    # You can add KeepShell=1 to avoid closing the container after conformity checks
+    #  Options:
+    # - KeepShell=1  -- to avoid closing the container after conformity checks
+    # - WriteableWorkspace=1 -- to allow writing to the workspace share from within container
 
-    #  container-test.sh maps the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
-    #  that points to a temp dir.  This allows the dev to easily follow the changes
-    #  in the container made to the install root.
-	[[ -n "${KeepShell}" ]] && stay="--keep-shell"; \
+    #  Note: container-test.sh maps the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
+    #     that points to a temp dir.  This allows the dev to easily follow the changes
+    #     in the container made to the install root.
+
+	[[ -n "${KeepShell}" ]] \
+		&& stay="--keep-shell"; \
+	[[ -n "${WriteableWorkspace}" ]] \
+		&& writeable_workspace="-w"; \
 	Command="shellkit/conformity/conformity-check.sh --kit $(kitname)" \
-	shellkit/container-test.sh --component shellkit-conformity $$stay
+	shellkit/container-test.sh --component shellkit-conformity $$stay $$writeable_workspace
 
     #  If KeepShell=1, the temp dir is not destroyed on container exit.
-	[[ -z "${KeepShell}" ]] && [[ -d $$tmpLocalBin ]] && rm -rf $$tmpLocalBin || :
+	[[ -z "${KeepShell}" ]] \
+		&& [[ -d $$tmpLocalBin ]] \
+			&& rm -rf $$tmpLocalBin || :
 
 erase-kit:
 	# Destroy everything but the scaffolding.

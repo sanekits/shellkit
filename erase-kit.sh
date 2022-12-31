@@ -35,6 +35,7 @@ main() {
         exit
     }
     [[ -z $FORCE_ERASE ]] && {
+        echo "We made a backup in ${tmpdir}, but you know how things go..."
         echo "(Note: define FORCE_ERASE=1 to bypass confirmation prompt)"
         read -p "If you're really sure, type \"yes\"."
         [[ $REPLY == yes ]] || die main.2 Probably smart to quit
@@ -46,7 +47,7 @@ main() {
         command rm -rf "${killList[@]}" || die main.4.2
     ) || die main.7
 
-    echo "Done: Backup saved to ${tmpdir}"
+    echo "Done: See ${tmpdir} for backup contents."
 }
 
 [[ -z ${sourceMe} ]] && {

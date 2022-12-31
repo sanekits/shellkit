@@ -185,8 +185,10 @@ release-core-upload: release-core
 
 release-draft-upload:
 	$(MAKE) DraftOption=--draft release-core-upload
+	echo "OK: relase published DRAFT"
 
 release-upload: release-core-upload
+	echo "OK: release published final (not draft)"
 
 release-list:
 	$(Ghx) release list | sort -n | tail -n 8

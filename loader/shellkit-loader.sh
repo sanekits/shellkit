@@ -80,7 +80,12 @@ main() {
     while read kit; do
         [[ -d ${kit} ]] || {
             echo "ERROR($(basename $scriptName)): shellkit ${kit} is referenced as a dependency but is not installed in ~/.local/bin/${kit}"
-            echo "   Run \"shpm install ${kit}\" to resolve this error."
+            echo "The shellkit dependency graph is :"
+            (
+                echo $'source:\tdepends-on:'
+                get_kit_depends | grep -Ev " -$" | sed 's/ /\t/'
+            ) | sed 's/^/   /'
+            echo "Try running \"shpm install ${kit}\" to resolve this error."
             continue
         } >&2
         [[ -f ${kit}/${kit}.bashrc ]] && {

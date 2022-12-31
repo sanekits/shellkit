@@ -16,7 +16,7 @@
 
 SHELL=/bin/bash
 
-.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft-upload release-list release-core release-core-upload
+.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft-upload release-list release-core release-core-upload release-upload
 
 # Given:
 #   - Kit has files to be packaged
@@ -185,6 +185,8 @@ release-core-upload: release-core
 
 release-draft-upload:
 	$(MAKE) DraftOption=--draft release-core-upload
+
+release-upload: release-core-upload
 
 release-list:
 	$(Ghx) release list | sort -n | tail -n 8

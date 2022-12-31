@@ -16,7 +16,7 @@
 
 SHELL=/bin/bash
 
-.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft release-draft-upload release-list
+.PHONY: apply-version update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft-upload release-list release-core release-core-upload
 
 # Given:
 #   - Kit has files to be packaged
@@ -166,22 +166,25 @@ git-status:
 	cd shellkit && git status
 	git status
 
-release-draft: build git-push push-tag
+release-core: build git-push push-tag
 	rm tmp/draft-url || :
 	$(Ghx) release delete --yes ${version} || :
-	$(Ghx) release create ${version} --notes "Version ${version}" --draft --title ${version} > tmp/draft-url
+	$(Ghx) release create ${version} --notes "Version ${version}" $(DraftOption) --title ${version} > tmp/draft-url
 	# Wait until the release shows up on view...
 	while ! $(Ghx) release view ${version}; do \
 		sleep 4  # Takes time for the release to be processed! \
 	done
 	cat tmp/draft-url
 
-release-draft-upload: release-draft
+release-core-upload: release-core
 	$(Ghx) release view ${version}
 	@echo publish_extra_files=${publish_extra_files}
 	$(Ghx) release delete-asset --yes ${version} $(setup_script) ${publish_extra_files} || :
 	$(Ghx) release upload ${version} tmp/$(setup_script) ${publish_extra_files}
 	cat tmp/draft-url
+
+release-draft-upload:
+	$(MAKE) DraftOption=--draft release-core-upload
 
 release-list:
 	$(Ghx) release list | sort -n | tail -n 8

@@ -1,0 +1,24 @@
+# temp delete me
+alias h=history
+history -c
+# Setup:
+export lx=~/projects/shellkit.workspace/pubtest
+(
+    # Setup
+    cd $lx || exit 1
+    echo "Zap start $(date -Iseconds)"
+    echo "" > ~/.bash_history
+    rm -rf /tmp/tx1
+    cmd="bash ./tmp/latest.sh --target /tmp/tx1 --noexec"
+    echo " --> cmd[$cmd]"
+
+    eval "$cmd"  # Build the temp tree / unpack
+
+    cat ~/.bash_history | sed "s/^/ ::/"  # Show if its broken
+    ls -al ./bash  # Show if its broken
+
+    cd /tmp/tx1 && Ps1Tail=latest bash  # Study what happened
+
+)
+
+history -s "make build; source ~/zap # rezap" # Reset hist

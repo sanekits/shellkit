@@ -13,6 +13,14 @@ die2() {
     exit 2
 }
 
+stub909() {
+    {
+        #[[ -z $innerStub ]] && return
+        echo "stub909[$BASHPID.$BASH_SUBSHELL/$innerStub]: $@  --> bash_history_size: $(wc -l ~/.bash_history)"
+    } >&2
+    true
+}
+
 canonpath() {
     builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
@@ -92,10 +100,12 @@ path_fixup_local_bin() {
 
 shrc_fixup() {
     # We must ensure that ~/.bashrc sources shellkit-loader.bashrc exactly once.
+    stub909 v103
     case $- in
         *i*) ;;
         *) die "shrc_fixup() must run in an interactive shell"
     esac
+
     (
         PS1="::" source ~/.bashrc
         [[ -n "$SHELLKIT_LOADER_VER" ]] && exit 0
@@ -103,12 +113,17 @@ shrc_fixup() {
          # Add hook into .bashrc
         echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)" >> ${HOME}/.bashrc
 
-    ) || { false; return; }
+    ) \
+        || { false; return; }
+
+    stub909 v119
     (
         # Verify that it took:
         PS1=":::" source ~/.bashrc;
-        [[ -n $SHELLKIT_LOADER_VER ]] || die "Failed shellkit-loader.bashrc hook installation"
+        [[ -n $SHELLKIT_LOADER_VER ]] \
+            || die "Failed shellkit-loader.bashrc hook installation"
     )
+    stub909 v126
     reload_reqd=true
 }
 
@@ -116,7 +131,10 @@ run_bashrc_hook() {
     # We must force bash to re-invoke our own script in interactive mode
     # to ensure that .bashrc loads -- otherwise an early-exit check of $- could spoil
     # the hook test
-    bash -i $Script --run-bashrc-hook
+    stub909 v134 "Script=$Script"
+    innerStub=1 HISTFILE= bash -i $Script --run-bashrc-hook # This fixes the bug but why??
+    #innerStub=1 bash -i $Script --run-bashrc-hook
+    stub909 v137 x=$?
 }
 
 install_symlinks() {
@@ -173,9 +191,13 @@ install_realpath_sh() {
 
 
 ensure_HOME() {
-    [[ -n $HOME ]] && [[ -d $HOME ]] && { true; return; }
-    [[ $UID == 0 ]] && { export HOME=/root; return; }
-    [[ -d /home/$(whoami) ]] && { export HOME=/home/$(whoami); return; }
+    [[ -n $HOME ]] \
+        && [[ -d $HOME ]] \
+            && { true; return; }
+    [[ $UID == 0 ]] \
+        && { export HOME=/root; return; }
+    [[ -d /home/$(whoami) ]] \
+        && { export HOME=/home/$(whoami); return; }
     die "ensure_HOME() failed"
 }
 
@@ -210,11 +232,14 @@ install_loader() {
 }
 
 main_base() {
-    [[ -z $Script ]] && die "\$Script not defined in main_base()"
+    [[ -z $Script ]] \
+        && die "\$Script not defined in main_base()"
+    stub909 v236
     ensure_HOME
     [[ $1 == --run-bashrc-hook ]] && {
         shift
         shrc_fixup "$@"
+        stub909 v241
         exit
     }
     if [[ ! -d $HOME/.local/bin/${Kitname} ]]; then
@@ -234,19 +259,34 @@ main_base() {
         # into the container
         die "cannot run setup.sh from ${HOME}/.local/bin"
     fi
-    builtin cd ${HOME}/.local/bin/${Kitname} || die "101"
+    builtin cd ${HOME}/.local/bin/${Kitname} \
+        || die "101"
     command rm -rf ./* ./.* &>/dev/null
-    [[ -d ${scriptDir} ]] || die "bad scriptDir [$scriptDir]"
-    command cp -r ${scriptDir}/* ./ || die "failed copying from ${scriptDir} to $PWD"
+    [[ -d ${scriptDir} ]] \
+        || die "bad scriptDir [$scriptDir]"
+    command cp -r ${scriptDir}/* ./ \
+        || die "failed copying from ${scriptDir} to $PWD"
     builtin cd .. # Now were in .local/bin
-    command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "102.2"
-    path_fixup_local_bin ${Kitname} || die "102.5"
-    install_realpath_sh || die "104.5"
-    install_symlinks || die "105"
-    install_loader || die "105.5"
-    run_bashrc_hook || die "105.7"
-    fixup_local_bin_perms || die "106"
+    command ln -sf ./${Kitname}/${Kitname}-version.sh ./ \
+        || die "102.2"
+    path_fixup_local_bin ${Kitname} \
+        || die "102.5"
+    install_realpath_sh \
+        || die "104.5"
+    stub909 v275
+    install_symlinks \
+        || die "105"
+    install_loader \
+        || die "105.5"
+    stub909 v280
+    run_bashrc_hook \
+        || die "105.7"
+    stub909 v283
+    fixup_local_bin_perms \
+        || die "106"
     echo "${Kitname} installed in ~/.local/bin: OK"
-    $reload_reqd && builtin echo "Shell reload required ('bash -l')" >&2
+    stub909 v287
+    $reload_reqd \
+        && builtin echo "Shell reload required ('bash -l')" >&2
 }
 

@@ -94,7 +94,6 @@ main() {
 
 set +u
 [[ -z ${sourceMe} ]] && {
-    set -x
     while [[ -n $1 ]]; do
         case $1 in
             --component) shift; Component="$1";;

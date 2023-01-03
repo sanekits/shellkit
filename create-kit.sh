@@ -111,7 +111,7 @@ main() {
         command git remote add upstream git@github.com:sanekits/${kitname} || die main.4.2
     }
     [[ -f .gitignore ]] || {
-        echo -e "shellkit\ntmp" > .gitignore
+        echo -e "shellkit\ntmp\.fake-home-local" > .gitignore
     }
     local version='0.1.0'
     [[ -f version ]] || echo "${version}" > version

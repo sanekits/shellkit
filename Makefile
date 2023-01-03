@@ -117,10 +117,6 @@ conformity-check:
 	Command="shellkit/conformity/conformity-check.sh --kit $(kitname)" \
 	shellkit/container-test.sh --component shellkit-conformity $$stay $$writeable_workspace
 
-    #  If KeepShell=1, the temp dir is not destroyed on container exit.
-	[[ -z "${KeepShell}" ]] \
-		&& [[ -d $$tmpLocalBin ]] \
-			&& rm -rf $$tmpLocalBin || :
 
 erase-kit:
 	# Destroy everything but the scaffolding.

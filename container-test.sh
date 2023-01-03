@@ -10,7 +10,7 @@
 #   - See $ShellkitWorkspace/.devcontainer/shellkit-component.mk
 #
 #   - Mounts :
-#      - temp dir on the host into ~/.local/bin of the container so that
+#      - temp dir on the host into ~/.local of the container so that
 #        changes applied by a kit installer can be easily inspected / compared from
 #        the host side
 #      - PWD:/workspace:ro
@@ -69,21 +69,18 @@ main() {
     make -f ${ComponentDockerMakefile} Component=${Component} image \
         || die "102 image create failed"
 
-    # Prepare the fake .local/bin:
-	local tmpLocalBin=$( mktemp -d -p /tmp fakelocalbin-XXXXX )
-    mkdir -p $tmpLocalBin
-    chown $(id -u):$(id -u) $tmpLocalBin \
-        || die 103 bad chown
-    chmod oug+rx $tmpLocalBin \
-        || die 104 bad chown
-    command rm $(dirname $tmpLocalBin)/fakelocalbin-latest &>/dev/null \
-        || true
-    ln -sf $tmpLocalBin $(dirname $tmpLocalBin)/fakelocalbin-latest \
-        || die 105 bad ln
+    # Prepare the fake HOME/.local tree:
+	local tmpHomeLocal=${PWD}/.fake-home-local
+    [[ -d $tmpHomeLocal ]] && {
+        rm -rf "$tmpHomeLocal" \
+            || die 101.4
+    }
+    mkdir $tmpHomeLocal \
+        || die 101.5
 
     # Create+launch the container:
 	local volumes="-v ${PWD}:/workspace${Read_only_workspace}  \
-        -v ${tmpLocalBin}:/home/vscode/.local/bin  \
+        -v ${tmpHomeLocal}:/home/vscode/.local  \
         -v ${ShellkitWorkspace}:/shellkit-workspace"
     echo "Command=${Command}"
     echo "Component=${Component}"
@@ -97,6 +94,7 @@ main() {
 
 set +u
 [[ -z ${sourceMe} ]] && {
+    set -x
     while [[ -n $1 ]]; do
         case $1 in
             --component) shift; Component="$1";;

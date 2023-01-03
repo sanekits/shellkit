@@ -115,8 +115,9 @@ shrc_fixup() {
 run_bashrc_hook() {
     # We must force bash to re-invoke our own script in interactive mode
     # to ensure that .bashrc loads -- otherwise an early-exit check of $- could spoil
-    # the hook test
-    bash -i $Script --run-bashrc-hook
+    # the hook test.
+    # (We're disabling HISTFILE because of issue #11: it works, but is not fully understood.)
+    HISTFILE= bash -i $Script --run-bashrc-hook
 }
 
 install_symlinks() {

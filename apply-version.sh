@@ -26,7 +26,7 @@ stub() {
 update_readme_version() {
     local kitname="$1"
     local version="$2"
-    sedxi ./README.md -e "s%${kitname}-setup-[0-9]\.[0-9]\.[0-9]\.sh%${kitname}-setup-${version}.sh%"
+    sedxi ./README.md -e "s%${kitname}-setup-[0-9]\.[0-9]\.[0-9]\.sh%${kitname}-setup-${version}.sh%" -e "s%[0-9]\.[0-9]\.[0-9]%${version}%g"
 }
 
 update_version_script() {

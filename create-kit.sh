@@ -32,8 +32,10 @@ initReadme() {
 ## Setup
 
 Download and install the self-extracting setup script:
-
-    https://github.com/sanekits/${kitname}/releases/latest/downloads/${kitname}-setup-${version}.sh
+```
+curl -L https://github.com/sanekits/${kitname}/releases/download/${version}/${kitname}-setup-${version}.sh \
+    -o ~/tmp$$.sh && bash ~/tmp$$.sh && rm ~/tmp$$.sh
+```
 
 Or **if** [shellkit-pm](https://github.com/sanekits/shellkit-pm) is installed:
 

@@ -14,7 +14,15 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
+Makefile: ;
 SHELL=/bin/bash
+.ONESHELL:
+.SUFFIXES:
+.SHELLFLAGS = -uec
+MAKEFLAGS += --no-builtin-rules --no-print-directory
+
+absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+
 
 .PHONY: apply-version verbump update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft-upload release-list release-core release-core-upload release-upload
 
@@ -109,18 +117,26 @@ conformity-check:
     #  Note: container-test.sh maps the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
     #     that points to a temp dir.  This allows the dev to easily follow the changes
     #     in the container made to the install root.
+	@ set +ue
+	[[ -n "$(KeepShell)" ]] \
+		&& stay="--keep-shell" || : ;
 
-	[[ -n "${KeepShell}" ]] \
-		&& stay="--keep-shell"; \
-	[[ -n "${WriteableWorkspace}" ]] \
-		&& writeable_workspace="-w"; \
+	[[ -n "$(WriteableWorkspace)" ]] \
+		&& writeable_workspace="-w" || : ;
 	Command="shellkit/conformity/conformity-check.sh --kit $(kitname)" \
 	shellkit/container-test.sh --component shellkit-conformity $$stay $$writeable_workspace
 
+	# ^^ Run container-test.sh, have it launch the shellkit-conformity component, and
+	#   then run our conformity-check.sh script
+
     #  If KeepShell=1, the temp dir is not destroyed on container exit.
-	[[ -z "${KeepShell}" ]] \
-		&& [[ -d $$tmpLocalBin ]] \
-			&& rm -rf $$tmpLocalBin || :
+	if [[ -z "$(KeepShell)" ]]; then
+		if [[ -d "$$tmpLocalBin" ]]; then
+			rm -rf "$$tmpLocalBin" || :
+		fi
+	fi
+	true
+
 
 erase-kit:
 	# Destroy everything but the scaffolding.

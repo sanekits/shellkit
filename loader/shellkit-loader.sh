@@ -67,7 +67,7 @@ format_tsort_errs() {
 }
 
 get_sorted_kitnames() {
-    get_kit_depends | tsort 2> >( format_tsort_errs ) | grep -v '^-$'
+    get_kit_depends | tsort 2> >( format_tsort_errs ) | grep -v '^-$' | tac
 }
 
 main() {

@@ -1,4 +1,5 @@
 # shellkit-loader.bashrc
+# :vim filetype=sh :
 #
 #  This file should be hooked into the static shell init
 # process, e.g. you could add this to ~/.bashrc:
@@ -7,7 +8,7 @@
 #
 #  Normally this file is installed by shellkit automatically.
 
-export SHELLKIT_LOADER_VER=2
+export SHELLKIT_LOADER_VER=3
 
 shellkit_loader() {
     # Load all shellkit init files (e.g. ~/.local/bin/<kit>/<kit>.bashrc),

@@ -71,12 +71,21 @@ print-build-depends:
 .PHONY: shellkit-ref-validate
 shellkit-ref-validate:
 	@# If there's no shellkit-ref file, then the embedded shellkit branch should be 'main'
-	@# If there IS a shellkit-ref file, then the embedded shellkit branch should match
-	@die() { echo "ERROR: $$*" >&2; exit 1; }; \
-	shkbranch="$$( cd shellkit &>/dev/null && git rev-parse --abbrev-ref HEAD )" ; \
-		decbranch=$$(cat ./shellkit-ref 2>/dev/null); \
-		[[ -n $$decbranch ]] && { [[ $$decbranch == $$shkbranch ]] && exit 0 || die "current shellkit branch [$$shkbranch] does not match ./shellkit-ref [$$decbranch]"; }; \
-		[[ $$shkbranch == main ]] || die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
+	# If there IS a shellkit-ref file, then the embedded shellkit branch should match
+	die() {
+		echo "ERROR: $$*" >&2
+		exit 1
+	}
+	shkbranch="$$( cd shellkit &>/dev/null && git rev-parse --abbrev-ref HEAD )"
+	decbranch=$$(cat ./shellkit-ref 2>/dev/null || echo )
+	[[ -n $$decbranch ]] \
+		&& {
+			[[ $$decbranch == $$shkbranch ]] \
+				&& exit 0 \
+				|| die "current shellkit branch [$$shkbranch] does not match ./shellkit-ref [$$decbranch]"
+	};
+	[[ $$shkbranch == main ]] \
+		|| die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
 
 tree-setup: shellkit-ref-validate
 

@@ -20,10 +20,17 @@ shellkit_loader() {
         [[ -f ${HOME}/.local/bin/shellkit-loader.sh ]] && {
             loaderDir=${HOME}/.local/bin
         } ||  {
-            builtin echo "ERROR: can't find shellkit-loader.sh"
+            builtin echo "ERROR: can't find shellkit-loader.sh" >&2
             return;
         }
     }
+    case ":${PATH}:" in
+        *:"${HOME}/.local/bin":*)
+            ;;
+        *)
+            PATH=${HOME}/.local/bin:$PATH
+            ;;
+    esac
     local initfile
     local loaderScript
     loaderScript=${loaderDir}/shellkit-loader.sh

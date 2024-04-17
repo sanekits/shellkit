@@ -44,7 +44,7 @@ none:
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
-Ghx := gh
+Ghx := GH_TOKEN=GH_TOKEN_2 command gh
 ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f $${dir}/.shellkit-workspace ]] && { ( cd $${dir}; pwd ); break; }; done )
 
 -include ./make-kit.mk  # Project-specific makefile

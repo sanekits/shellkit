@@ -50,10 +50,14 @@ ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f $
 -include ./make-kit.mk  # Project-specific makefile
 
 
-build_depends += $(shell find bin/* -type f)
+# If the bin/shellkit/{symlinks} are not present, we want to induce a hard failure during 'make build'.
+# This adapts to a historical oversight, in which some kits were missing the symlinks.
+# You can retrofit an old kit by running the '.fix-shellkit-symlinks' target.
+build_depends += $(shell find bin/* -type f; echo bin/shellkit/{realpath,setup-base,shellkit-loader}.sh bin/shellkit/shellkit-loader.bashrc | sort -u)
 build_depends += shellkit/Makefile shellkit/makeself.sh make-kit.mk shellkit/makeself-header.sh
 build_depends += shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-help.sh
 build_depends += shellkit/loader/shellkit-loader.bashrc shellkit/loader/shellkit-loader.sh
+
 
 git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk {'print $$3'})
 git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')
@@ -222,3 +226,10 @@ release-list:
 	$(Ghx) release list | sort -n | tail -n 8
 	$(Ghx) release view ${version}
 
+.fix-shellkit-symlinks:
+	@
+	set -x
+	cd bin
+	mkdir -p shellkit
+	cd shellkit
+	ln -sf ../../shellkit/{realpath,setup-base,loader/shellkit-loader}.sh ../../shellkit/loader/shellkit-loader.bashrc  ./

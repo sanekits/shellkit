@@ -6,8 +6,7 @@ die() {
     exit 1
 }
 
-scriptName=$(readlink -f -- $0)
-scriptDir=$(dirname -- $scriptName)
+scriptName=$(readlink -f -- "$0")
 
 stubShell() {
     echo "stubShell: do exit to continue" >&2
@@ -31,15 +30,15 @@ make_nonroot_user() {
 
     if [[ "$(type -t yum)" == *file* ]];  then
         # Redhat
-        adduser --uid 1000 $nonroot_user
+        adduser --uid 1000 "$nonroot_user"
 
     else
         # Debian:
-        adduser --uid 1000 $nonroot_user --gecos "" --disabled-password || {
+        adduser --uid 1000 "$nonroot_user" --gecos "" --disabled-password || {
             die "adduser failed ${scriptName}";
         }
     fi
-    bashrc_content > /home/${nonroot_user}/.bashrc
+    bashrc_content > "/home/${nonroot_user}/.bashrc"
     echo "User $nonroot_user created"
 }
 
@@ -48,7 +47,7 @@ install_requirements() {
     apt-get install -y vim-tiny curl
     [[ -f ${TEST_DIR}/container_prep.sh ]] && {
         echo "Running ${TEST_DIR}/container_prep.sh:"
-        ${TEST_DIR}/container_prep.sh || die "Failed container_prep.sh"
+        "${TEST_DIR}/container_prep.sh" || die "Failed container_prep.sh"
     }
 }
 
@@ -75,7 +74,7 @@ main() {
     install_requirements
 
     echo "Entering test shell"
-    cd /workspace
+    cd /workspace || return
     if $do_login; then
         su vscode  -c '/bin/bash --rcfile shellkit/docker-test-bashrc'
     else

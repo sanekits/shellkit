@@ -2,7 +2,7 @@
 # Test the current kit in a docker shell
 
 die() {
-    echo "ERROR: $@" >&2
+    echo "ERROR: $*" >&2
     exit 1
 }
 
@@ -13,7 +13,7 @@ canonpath() {
         return
     }
     # Ok for rough work only.  Prefer realpath.sh if it's on the path.
-    ( cd -L -- "$(dirname -- $0)"; echo "$(pwd -P)/$(basename -- $0)" )
+    ( cd -L -- "$(dirname -- "$0")" || exit; echo "$(pwd -P)/$(basename -- "$0")" )
 }
 
 stub() {
@@ -23,7 +23,7 @@ stub() {
 Script=$(canonpath "$0")
 Scriptdir=$(dirname -- "$Script")
 
-cd ${Scriptdir}/..
+cd "${Scriptdir}/.." || exit
 
 getMounts() {
     builtin echo -n "-v $PWD:/workspace -v ${HOME}:/host_home:ro "
@@ -46,7 +46,7 @@ getInnerArgs() {
 
 getEnvironment() {
     [[ -n $TEST_DIR ]] && echo -n " -e " TEST_DIR=/test_dir  # Because we mounted it there
-    [[ -n $INNER_TEST_SCRIPT ]] && echo -n " -e " INNER_TEST_SCRIPT=${INNER_TEST_SCRIPT}
+    [[ -n $INNER_TEST_SCRIPT ]] && echo -n " -e  INNER_TEST_SCRIPT=${INNER_TEST_SCRIPT}"
 }
 
 getInnerCmdline() {
@@ -57,5 +57,5 @@ getInnerCmdline() {
 
 echo "Current dir: $(pwd -P)"
 
-docker run $(getMounts) --rm --init -it $(getEnvironment) --name docker-test-$$ "$(getBaseImage)" bash -c "$(getInnerCmdline)" || die "docker_testenv.sh returned failure"
+docker run "$(getMounts)" --rm --init -it "$(getEnvironment)" --name docker-test-$$ "$(getBaseImage)" bash -c "$(getInnerCmdline)" || die "docker_testenv.sh returned failure"
 

@@ -12,10 +12,10 @@ canonpath() {
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- "$0")" || exit; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
-scriptName="$(canonpath $0)"
+scriptName="$(canonpath "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 scriptBase=$(command basename -- "${scriptName}")
 
@@ -37,22 +37,24 @@ stub() {
 
 # Defines bpoint():
 _DEBUG_=${_DEBUG_:-0}
-[[ $_DEBUG_ -eq 1 ]] && {
+if [[ $_DEBUG_ -eq 1 ]]; then
     echo "_DEBUG_ enabled, sourceMeRun.taskrc is loading." >&2
+    #shellcheck disable=1090
     [[ -f ~/bin/sourceMeRun.taskrc ]] && source ~/bin/sourceMeRun.taskrc
-} || {
+else
     bpoint() { : ;} # no-op
-}
+fi
 
 
 parse_help_items() {
     # Given a stream of shell text with #help markers, print a "help item" for
     # each.
-    while read line; do
-        echo -n $line | tr -d '(){' | sed -e 's/^function //'
-        read helptext
+    while read -r line; do
+        echo -n "$line" | tr -d '(){' | sed -e 's/^function //'
+        read -r helptext
+        #shellcheck disable=2001
         echo "$helptext" | sed 's/^\s*#help/\t/'
-        read _
+        read -r _
     done < <(command grep -E -B1 '\s*#help ')
 
 }
@@ -61,7 +63,7 @@ parse_help_from_scripts() {
     # Each arg is a file, potentially with help items
     for arg; do
         [[ -f ${arg} ]] && {
-            cat ${arg} | parse_help_items
+            parse_help_items <"$arg"
         }
     done
 }
@@ -83,13 +85,13 @@ parse_help_from_symlinks_() {
     #
     [[ -f ./_symlinks_ ]] || return
     [[ -n "${Kitname}" ]] || return
-    while read SHELLKIT_HELP_SYMBOL parsekey text; do
+    while read -r SHELLKIT_HELP_SYMBOL parsekey text; do
         case "$parsekey" in
             '#help@')
                 export SHELLKIT_HELP_SYMBOL
                 echo "${SHELLKIT_HELP_SYMBOL}:"
                 (
-                    cd ~/.local/bin
+                    cd ~/.local/bin || exit
                     eval "${text}"
                 ) 2>&1 | command fold -s | command sed 's/^/   /'
                 ;;
@@ -109,18 +111,18 @@ set_kitname() {
     local _f=${FUNCNAME[0]}
     [[ -d $scriptDir ]] || return
     Kitname=$(
-        cd $scriptDir || die $_f.1
+        cd "$scriptDir" || die "$_f.1"
         xdir=$scriptDir
-        for n in {1..3}; do
+        for _ in {1..3}; do
             [[ -f ${xdir}/Kitname ]] && {
-                command cat ${xdir}/Kitname
+                command cat "${xdir}/Kitname"
                 exit
             }
-            xdir=$(dirname $xdir)
+            xdir=$(dirname "$xdir")
         done
         false
     )
-    [[ -n $Kitname ]] || die $_f.2
+    [[ -n $Kitname ]] || die "$_f.2"
 }
 
 main() {
@@ -128,7 +130,7 @@ main() {
     parse_help_from_scripts "$@"
     [[ -f ~/.local/bin/${Kitname}/_symlinks_ ]] && {
         (
-            cd ~/.local/bin/${Kitname}
+            cd ~/.local/bin/"${Kitname}" || exit
             Kitname=${Kitname} parse_help_from_symlinks_
         )
     }

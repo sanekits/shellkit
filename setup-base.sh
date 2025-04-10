@@ -2,7 +2,7 @@
 # setup-base.sh for shellkit.  Source this from the kit's own setup.sh
 
 #shellcheck disable=2154
-PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
+PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]:-_unk_}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
 
 die() {
     echo "ERROR(setup-base.sh): $*" >&2

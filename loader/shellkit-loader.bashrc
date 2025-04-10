@@ -1,3 +1,4 @@
+#!/bin/bash
 # shellkit-loader.bashrc
 # :vim filetype=sh :
 #
@@ -8,22 +9,22 @@
 #
 #  Normally this file is installed by shellkit automatically.
 
-export SHELLKIT_LOADER_VER=4
+export SHELLKIT_LOADER_VER=5
 
 shellkit_loader() {
     # Load all shellkit init files (e.g. ~/.local/bin/<kit>/<kit>.bashrc),
     #  respecting kit dependencies.
     local loaderDir
-    [[ -f ./shellkit-loader.sh ]] && {
+    if [[ -f ./shellkit-loader.sh ]]; then
         loaderDir=$PWD
-    } || {
-        [[ -f ${HOME}/.local/bin/shellkit-loader.sh ]] && {
+    else
+        if [[ -f ${HOME}/.local/bin/shellkit-loader.sh ]]; then
             loaderDir=${HOME}/.local/bin
-        } ||  {
+        else
             builtin echo "ERROR: can't find shellkit-loader.sh" >&2
             return;
-        }
-    }
+        fi
+    fi
     case ":${PATH}:" in
         *:"${HOME}/.local/bin":*)
             ;;
@@ -35,11 +36,12 @@ shellkit_loader() {
     local loaderScript
     loaderScript=${loaderDir}/shellkit-loader.sh
     local orgDir=$PWD
-    builtin cd "$loaderDir"
+    builtin cd "$loaderDir"  || return
     for initfile in $( SHLOADER_DIR="$loaderDir" ${loaderScript} ); do
+        #shellcheck disable=1090
         source "$initfile"
     done
-    builtin cd ${orgDir}
+    builtin cd "${orgDir}" || return
 }
 
 [[ -z $SHELLKIT_LOAD_DISABLE ]] && {

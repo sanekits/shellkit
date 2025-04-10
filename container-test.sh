@@ -23,14 +23,14 @@
 #       --keep-shell,-k:  # Stay in the container shell instead of exiting after command
 
 scriptName="$(readlink -f "$0")"
-scriptDir=$(command dirname -- "${scriptName}")
-PS4='\033[0;33m+$?(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#shellcheck disable=2154
+PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]:-_unk_}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
 
 setShellkitWorkspace() {
     local xd=$PWD
     while [[ $xd != / ]]; do
         [[ -f ${xd}/.shellkit-workspace ]] && { ShellkitWorkspace=$xd; return; }
-        xd=$(dirname -- $xd)
+        xd=$(dirname -- "$xd")
     done
 }
 setShellkitWorkspace
@@ -42,7 +42,7 @@ Component=
 Read_only_workspace=":ro"
 
 die() {
-    builtin echo "ERROR($(basename ${scriptName})): $*" >&2
+    builtin echo "ERROR($(basename "${scriptName}")): $*" >&2
     builtin exit 1
 }
 
@@ -54,7 +54,7 @@ stub() {
     [[ -n $NoStubs ]] && { set -u; return; }
     [[ -n $__stub_counter ]] && (( __stub_counter++  )) || __stub_counter=1
     {
-        builtin printf "  <=< STUB(%d:%s)" $__stub_counter "$(basename $scriptName)"
+        builtin printf "  <=< STUB(%d:%s)" "$__stub_counter" "$(basename "$scriptName")"
         builtin printf "[%s] " "$@"
         builtin printf " >=> \n"
     } >&2
@@ -66,19 +66,19 @@ main() {
         || die 100
 
     # Create/update the image:
-    make -f ${ComponentDockerMakefile} Component=${Component} image \
+    make -f "${ComponentDockerMakefile}" "Component=${Component}" image \
         || die "102 image create failed"
 
     # Prepare the fake .local/bin:
-	local tmpLocalBin=$( mktemp -d -p /tmp fakelocalbin-XXXXX )
-    mkdir -p $tmpLocalBin
-    chown $(id -u):$(id -u) $tmpLocalBin \
+	local tmpLocalBin; tmpLocalBin=$( mktemp -d -p /tmp fakelocalbin-XXXXX )
+    mkdir -p "$tmpLocalBin"
+    chown "$(id -u):$(id -u)" "$tmpLocalBin" \
         || die 103 bad chown
-    chmod oug+rx $tmpLocalBin \
+    chmod oug+rx "$tmpLocalBin" \
         || die 104 bad chown
-    command rm $(dirname $tmpLocalBin)/fakelocalbin-latest &>/dev/null \
+    command rm "$(dirname "$tmpLocalBin")/fakelocalbin-latest" &>/dev/null \
         || true
-    ln -sf $tmpLocalBin $(dirname $tmpLocalBin)/fakelocalbin-latest \
+    ln -sf "$tmpLocalBin" "$(dirname "$tmpLocalBin")/fakelocalbin-latest" \
         || die 105 bad ln
 
     # Create+launch the container:
@@ -87,9 +87,9 @@ main() {
         -v ${ShellkitWorkspace}:/shellkit-workspace"
     echo "Command=${Command}"
     echo "Component=${Component}"
-    make -f ${ComponentDockerMakefile} \
+    make -f "${ComponentDockerMakefile}" \
         Volumes="${volumes}" \
-        Component=${Component} \
+        Component="${Component}" \
         Command="${Command}"  \
         run
 

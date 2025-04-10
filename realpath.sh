@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # See https://github.com/sanekits/sh-realpath, forked from https://github.com/mkropat/sh-realpath
 
 realpath() {
@@ -13,8 +13,7 @@ _resolve_symlinks() {
     _assert_no_path_cycles "$@" || return
 
     local dir_context path
-    path=$(readlink -- "$1")
-    if [ $? -eq 0 ]; then
+    if path=$(readlink -- "$1"); then
         dir_context=$(dirname -- "$1")
         _resolve_symlinks "$(_prepend_dir_context_if_necessary "$dir_context" "$path")" "$@"
     else

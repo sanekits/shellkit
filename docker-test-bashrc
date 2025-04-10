@@ -1,3 +1,4 @@
+#!/bin/bash
 # docker-test-bashrc
 # Used when running docker-test.sh
 
@@ -5,11 +6,12 @@ set -o vi
 # disable flow control for terminal:
 /bin/stty -ixon -ixoff 2>/dev/null
 alias lr='command ls -lirta'
+#shellcheck disable=1090
 source ~/.bashrc
 
 [[ -n $TEST_DIR ]] && [[ -n $INNER_TEST_SCRIPT ]] && {
     echo "${TEST_DIR}/${INNER_TEST_SCRIPT} startup:" >&2
-    ${TEST_DIR}/${INNER_TEST_SCRIPT}
+    "${TEST_DIR}"/"${INNER_TEST_SCRIPT}"
     exit
 }
 echo "pwd=$(pwd -P)"

@@ -14,7 +14,7 @@ canonpath() {
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- "$0")" || exit; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
 Script=$(canonpath "$0")
@@ -22,5 +22,5 @@ Scriptdir=$(dirname -- "$Script")
 
 
 if [[ -z "$sourceMe" ]]; then
-    builtin printf "%s\t%s\n" ${Scriptdir} $KitVersion
+    builtin printf "%s\t%s\n" "${Scriptdir}" $KitVersion
 fi

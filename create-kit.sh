@@ -2,18 +2,19 @@
 # create-kit.sh
 
 
-[[ -x shellkit/realpath.sh ]] || die  $0 cannot find shellkit/realpath.sh
+[[ -x shellkit/realpath.sh ]] || die "$0 cannot find shellkit/realpath.sh"
 
-scriptName="$(command realpath.sh -f $0)"
+scriptName="$(command realpath.sh -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
-PS4='\033[0;33m+$?(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
-
+#shellcheck disable=2154
+PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]:-_unk_}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
 
 die() {
-    builtin echo "ERROR($(basename $scriptName)): $*" >&2
+    builtin echo "ERROR($(basename "$scriptName")): $*" >&2
     builtin exit 1
 }
 
+#shellcheck disable=1091
 sourceMe=1 source "${scriptDir}/sedxi" || die "0.1"
 
 stub() {
@@ -26,6 +27,7 @@ initReadme() {
     local version=$2
     [[ -n $kitname ]] || die initReadme.1
     [[ -n $version ]] || die initReadme.2
+    #shellcheck disable=2006
     cat <<-EOF
 # ${kitname}
 
@@ -33,7 +35,7 @@ initReadme() {
 
 Download and install the self-extracting setup script:
 ```
-curl -L https://github.com/sanekits/${kitname}/releases/download/${version}/${kitname}-setup-${version}.sh \
+curl -L "https://github.com/sanekits/${kitname}/releases/download/${version}/${kitname}-setup-${version}.sh" \
     -o ~/tmp$$.sh && bash ~/tmp$$.sh && rm ~/tmp$$.sh
 ```
 
@@ -58,9 +60,9 @@ fix_kitname() {
 
     [[ $filename == */* ]] && die "fix_kitname.3.1 filename argument must not contain dir elements"
     sedxi "$filename" -e "s%<Kitname>%${Kitname}%g"  || die fix_kitname.3
-    local newFilename=$( echo "$filename" | command sed "s/kitname/${kitname}/g")
-    [[ $newFilename == $(basename $filename) ]] && return  # No need to rename
-    command mv $filename $newFilename || die "fix_kitname.4 mv failed"
+    local newFilename; newFilename=$( echo "$filename" | command sed "s/kitname/${kitname}/g")
+    [[ $newFilename == $(basename "$filename") ]] && return  # No need to rename
+    command mv "$filename" "$newFilename" || die "fix_kitname.4 mv failed"
 }
 
 main() {
@@ -72,23 +74,23 @@ main() {
 
     [[ -d ./shellkit/.git ]] || die "main.0 Expected ./shellkit/.git to exist in $PWD"
 
-    local shellkit_version=$(cat ./shellkit/version )
+    local shellkit_version; shellkit_version=$(cat ./shellkit/version )
     [[ -n $shellkit_version ]] || die "main.0.3 No shellkit/version"
 
 
     command mkdir ./bin -p
-    [[ -f ./bin/Kitname ]] && {
+    if [[ -f ./bin/Kitname ]]; then
         kitname=$(cat ./bin/Kitname)
-    } || {
-        kitname=$(basename $PWD)
+    else
+        kitname=$(basename "$PWD")
         [[ "$kitname" =~ ^[a-zA-Z][-a-zA-Z0-9_]+$ ]] || {
             die "main.3 Kitname contains invalid chars.  Change directory name to match requirements"
         }
         echo "$kitname" > ./bin/Kitname
-    }
+    fi
     [[ -f make-kit.mk ]] || {
         command cp shellkit/templates/make-kit.mk.template ./make-kit.mk || die main.1 failed copying make-kit.mk
-        fix_kitname $kitname make-kit.mk || die main.1.4
+        fix_kitname "$kitname" make-kit.mk || die main.1.4
     }
     (
         builtin cd ./bin && {
@@ -102,7 +104,7 @@ main() {
             ) || die main.2.3
             # Replace <Kitname> placeholder text and possibly rename files in the created it:
             for filename in kitname-version.sh kitname.bashrc kitname.sh _symlinks_ setup.sh; do
-                fix_kitname $kitname $filename || die "main.2.5  processing ${filename} failed"
+                fix_kitname "$kitname" $filename || die "main.2.5  processing ${filename} failed"
             done
         }
     )
@@ -110,7 +112,7 @@ main() {
 
     [[ -d .git ]] || {
         command git init || die main.4.1
-        command git remote add upstream git@github.com:sanekits/${kitname} || die main.4.2
+        command git remote add upstream "git@github.com:sanekits/${kitname}" || die main.4.2
     }
     [[ -f .gitignore ]] || {
         echo -e "shellkit\ntmp" > .gitignore

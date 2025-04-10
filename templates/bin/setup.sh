@@ -15,16 +15,18 @@ canonpath() {
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- "$0")" || exit; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
 stub() {
    builtin echo "  <<< STUB[$*] >>> " >&2
 }
-scriptName="$(canonpath  $0)"
+scriptName="$(canonpath  "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 
-source ${scriptDir}/shellkit/setup-base.sh
+#shellcheck disable=1091
+source "${scriptDir}/shellkit/setup-base.sh"
+
 
 die() {
     builtin echo "ERROR(setup.sh): $*" >&2
@@ -33,7 +35,7 @@ die() {
 
 main() {
     Script=${scriptName} main_base "$@"
-    builtin cd ${HOME}/.local/bin || die 208
+    builtin cd "${HOME}/.local/bin" || die 208
     # TODO: kit-specific steps can be added here
 
 
@@ -43,8 +45,8 @@ main() {
     # able to traverse dirs and exec scripts, so that a source installation can
     # be replicated to a dest from the same file system (e.g. docker containers,
     # nfs-mounted home nets, etc)
-    command chmod og+rX ${HOME}/.local/bin/${Kitname} -R
-    command chmod og+rX ${HOME}/.local ${HOME}/.local/bin
+    command chmod og+rX "${HOME}/.local/bin/${Kitname:-_unk_}" -R
+    command chmod og+rX "${HOME}/.local" "${HOME}/.local/bin"
     true
 }
 

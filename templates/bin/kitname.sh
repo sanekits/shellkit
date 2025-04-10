@@ -13,14 +13,13 @@ canonpath() {
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- "$0")" || exit; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
 scriptName="$(canonpath "$0")"
-scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR($(command basename -- ${scriptName})): $*" >&2
+    builtin echo "ERROR($(command basename -- "${scriptName}")): $*" >&2
     builtin exit 1
 }
 

@@ -1,14 +1,15 @@
 #!/bin/bash
 # apply-version.sh
 
-scriptName="$(command readlink -f $0)"
+scriptName="$(command readlink -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {
-    builtin echo "ERROR($(basename -- $scriptName)): $*" >&2
+    builtin echo "ERROR($(basename -- "$scriptName")): $*" >&2
     builtin exit 1
 }
 
+#shellcheck disable=1091
 sourceMe=1 source "${scriptDir}/sedxi" || die "0.1"
 
 stub() {
@@ -33,7 +34,7 @@ update_version_script() {
     local kitname="$1"
     local version="$2"
 
-    sedxi  bin/${kitname}-version.sh -e "s%KitVersion=[0-9]\.[0-9]\.[0-9]%KitVersion=${version}%"
+    sedxi  "bin/${kitname}-version.sh" -e "s%KitVersion=[0-9]\.[0-9]\.[0-9]%KitVersion=${version}%"
 }
 
 update_version_generic() {
@@ -42,8 +43,8 @@ update_version_generic() {
     local kitname="$1"
     local version="$2"
     shift 2
-    for file in $@; do
-        sedxi ${file} -e "s%<Kitname>%${kitname}%g" -e "s%[0-9]\.[0-9]\.[0-9]%${version}%g"
+    for file in "$@"; do
+        sedxi "${file}" -e "s%<Kitname>%${kitname}%g" -e "s%[0-9]\.[0-9]\.[0-9]%${version}%g"
     done
 }
 
@@ -65,7 +66,7 @@ main() {
                 die "unknown option(s): $*"
                 ;;
             *)
-                caller_file_list+=( $1 )
+                caller_file_list+=( "$1" )
                 ;;
         esac
         shift
@@ -84,12 +85,12 @@ main() {
     }
     [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "bad version: \"$version\""
     [[ -f README.md ]] && {
-        update_readme_version $kitname $version || die main.3
+        update_readme_version "$kitname" "$version" || die main.3
     }
     [[ -f bin/${kitname}-version.sh ]] && {
-        update_version_script $kitname $version || die main.4
+        update_version_script "$kitname" "$version" || die main.4
     }
-    update_version_generic $kitname $version "${caller_file_list[@]}" || die main.5
+    update_version_generic "$kitname" "$version" "${caller_file_list[@]}" || die main.5
     true
 }
 

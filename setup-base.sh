@@ -1,15 +1,16 @@
 #!/bin/bash
 # setup-base.sh for shellkit.  Source this from the kit's own setup.sh
 
-PS4='\033[0;33m+(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#shellcheck disable=2154
+PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
 
 die() {
-    echo "ERROR(setup-base.sh): $@" >&2
+    echo "ERROR(setup-base.sh): $*" >&2
     exit 1
 }
 
 die2() {
-    echo "ERROR(2,setup-base.sh): $@" >&2
+    echo "ERROR(2,setup-base.sh): $*" >&2
     exit 2
 }
 
@@ -23,13 +24,13 @@ canonpath() {
         return
     }
     # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(command dirname -- $0)"; builtin echo "$(command pwd -P)/$(command basename -- $0)" )
+    ( builtin cd -L -- "$(command dirname -- "$0")" || return; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
 reload_reqd=false
 
 [[ -z $scriptDir ]] && die "\$scriptDir not defined. This must be set by outer script"
-read Kitname _ < "${scriptDir}/Kitname"
+read -r Kitname _ < "${scriptDir}/Kitname"
 [[ -z $Kitname ]] && die "\$Kitname not defined"
 
 inode() {
@@ -41,12 +42,11 @@ is_on_path() {
     # Return true if $1 is on the PATH
     local tgt_dir="$1"
     [[ -z $tgt_dir ]] && { true; return; }
-    local vv=( $(echo "${PATH}" | tr ':' '\n') )
-    for v in "${vv[@]}"; do
-        if [[ $tgt_dir == "$v" ]]; then
+    while read -r v; do
+        if [[ "$tgt_dir" == "$v" ]]; then
             return
         fi
-    done
+    done < <( echo "${PATH}" | tr ':' '\n' )
     false
 }
 
@@ -65,9 +65,9 @@ path_fixup_local_bin() {
     ( # Create a semaphore script in ~/.local/bin.  If we can run it without specifying path, we're good.
         builtin cd
         semaphore=_semaphore_$$
-        mkdir -p ${HOME}/.local/bin
+        mkdir -p "${HOME}/.local/bin"
         [[ -d ${HOME}/.local/bin ]] || die2 "Failed to create ${HOME}/.local/bin"
-        localbin_semaphore > ${HOME}/.local/bin/${semaphore}
+        localbin_semaphore > "${HOME}/.local/bin/${semaphore}"
         command chmod +x ~/.local/bin/${semaphore}
         if ! command bash -l -c "${semaphore}" &>/dev/null; then
             exit 1  # .local/bin is not on the PATH
@@ -76,7 +76,7 @@ path_fixup_local_bin() {
         true # .local/bin is already on the PATH
     ) && { true; return; }
     [[ $? -eq 2 ]] && die "path_fixup_local_bin failed"
-    echo "~/.local/bin is not on the path. Fixing profile." >&2
+    echo '\~/.local/bin is not on the path. Fixing profile.' >&2
     (
         local profile=.bash_profile
         [[ -f ${HOME}/${profile} ]] || profile=.profile
@@ -97,15 +97,17 @@ shrc_fixup() {
         *) die "shrc_fixup() must run in an interactive shell"
     esac
     (
+        #shellcheck disable=1090
         PS1="::" source ~/.bashrc
         [[ -n "$SHELLKIT_LOADER_VER" ]] && exit 0
 
          # Add hook into .bashrc
-        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)" >> ${HOME}/.bashrc
+        echo "[[ -f \${HOME}/.local/bin/shellkit-loader.bashrc ]] && source \${HOME}/.local/bin/shellkit-loader.bashrc # Added by shellkit (${Kitname}-setup.sh)" >> "${HOME}/.bashrc"
 
     ) || { false; return; }
     (
         # Verify that it took:
+        #shellcheck disable=1090
         PS1=":::" source ~/.bashrc;
         [[ -n $SHELLKIT_LOADER_VER ]] || die "Failed shellkit-loader.bashrc hook installation"
     )
@@ -117,7 +119,7 @@ run_bashrc_hook() {
     # to ensure that .bashrc loads -- otherwise an early-exit check of $- could spoil
     # the hook test.
     # (We're disabling HISTFILE because of issue #11: it works, but is not fully understood.)
-    HISTFILE= bash -i $Script --run-bashrc-hook
+    HISTFILE="" bash -i "$Script" --run-bashrc-hook
 }
 
 install_symlinks() {
@@ -128,23 +130,22 @@ install_symlinks() {
     # Then:
     #   make symlink in . for each name in ${Kitname}/_symlinks_
     [[ -f ./${Kitname}/_symlinks_ ]] || { true; return; }
-    builtin read -a symlinks < <( command sed -e 's/#.*//'  ./${Kitname}/_symlinks_ | command tr '\n' ' ' )
-    for item in ${symlinks[*]}; do
-        command ln -sf ${Kitname}/${item} "./$(basename -- ${item})" || die "Failed installing symlink ${item}"
-        #echo "Symlink installed for: ${item}"
-    done
+    builtin read -ra symlinks < <( command sed -e 's/#.*//'  ./"${Kitname}"/_symlinks_ | command tr '\n' ' ' )
+    while read -r; do
+        command ln -sf "${Kitname}/${item}" "./$(basename -- "${item}")" || die "Failed installing symlink ${item}"
+    done <<< "${symlinks[@]}" 
 }
 
 version_lt() {
     # Returns true if left < right for 3-tuple version numbers
     (
-        IFS="." read  l0 l1 l2 <<< "$1"
-        IFS="." read  r0 r1 r2 <<< "$2"
-        (( $l0 < $r0 )) && exit
-        (( $l0 == $r0 )) || exit
-        (( $l1 < $r1 )) && exit
-        (( $l1 == $r1 )) || exit
-        (( $l2 < $r2 )) && exit
+        IFS="." read  -r l0 l1 l2 <<< "$1"
+        IFS="." read  -r r0 r1 r2 <<< "$2"
+        (( l0 < r0 )) && exit
+        (( l0 == r0 )) || exit
+        (( l1 < r1 )) && exit
+        (( l1 == r1 )) || exit
+        (( l2 < r2 )) && exit
         false
     )
 }
@@ -157,11 +158,12 @@ install_realpath_sh() {
     #   and ./realpath.sh !exists OR ./realpath.sh is lower version
     # Then:
     #   copy ${Kitname}/shellkit/realpath.sh to ./realpath.sh
-    local ourVers="$( ${Kitname}/shellkit/realpath.sh --version )"
+    local ourVers; ourVers="$( "${Kitname}/shellkit/realpath.sh" --version )"
+    #shellcheck disable=2046 
     [[ -n $ourVers ]] || return $(die "Failed testing realpath.sh version in kit")
     [[ -f ./realpath.sh ]] && {
         # Is the installed version > our version?
-        local installedVers="$( ./realpath.sh --version )"
+        local installedVers; installedVers="$( ./realpath.sh --version )"
         [[ -n "$installedVers" ]] && {
             if version_lt "$ourVers" "$installedVers"; then
                 echo "Installed version of realpath.sh is newer than ours, skipping."
@@ -169,43 +171,44 @@ install_realpath_sh() {
             fi
         }
     }
-    command cp ${Kitname}/shellkit/realpath.sh ./realpath.sh || die "Failed installing realpath.sh"
+    command cp "${Kitname}/shellkit/realpath.sh" ./realpath.sh || die "Failed installing realpath.sh"
 }
 
 
 ensure_HOME() {
     [[ -n $HOME ]] && [[ -d $HOME ]] && { true; return; }
     [[ $UID == 0 ]] && { export HOME=/root; return; }
-    [[ -d /home/$(whoami) ]] && { export HOME=/home/$(whoami); return; }
+    [[ -d /home/$(whoami) ]] && { export HOME; HOME=/home/$(whoami); return; }
     die "ensure_HOME() failed"
 }
 
 fixup_local_bin_perms() {
     [[ -d ${HOME}/.local/bin ]] || { true; return; }
-    command chmod oug+rx ${HOME}/.local/bin || return $(die "Failed setting +rx on ~/.local/bin")
-    command chmod oug+rx ${HOME}/.local 2>/dev/null || echo "Warning: failed setting +rx on ~/.local" >&2
+    #shellcheck disable=2046
+    command chmod oug+rx "${HOME}/.local/bin" || return $(die "Failed setting +rx on ~/.local/bin")
+    command chmod oug+rx "${HOME}/.local" 2>/dev/null || echo "Warning: failed setting +rx on ~/.local" >&2
     local item
     # Any shellkit tools should have a ~/.local/bin/*/shellkit/ dir, that's how we recognize them:
-    for item in $(command ls -d ${HOME}/.local/bin/*/shellkit/); do
+    while read -r item; do
         (
-            builtin cd $(command dirname -- ${item}) \
+            builtin cd "$(command dirname -- "${item}")" \
             && chmod og+rX . -R;
         )
-    done
+    done < <( command ls -d "${HOME}"/.local/bin/*/shellkit/)
 }
 
 install_loader() {
     (
-        cd ${HOME}/.local/bin || die 701
+        cd "${HOME}/.local/bin" || die 701
         for ff in shellkit-loader.{bashrc,sh}; do
             [[ -f ${Kitname}/shellkit/${ff} ]] || die "Kit ${Kitname} is missing ${ff}"
         done
-        ourVersion=$( ${Kitname}/shellkit/shellkit-loader.sh --version )
+        ourVersion=$( "${Kitname}/shellkit/shellkit-loader.sh" --version )
         curVersion=$( ./shellkit-loader.sh --version 2>/dev/null || echo 0 )
         [[ $curVersion -gt $ourVersion ]] && {
             exit 0  # We won't overwrite a newer version
         }
-        cp ${Kitname}/shellkit/shellkit-loader.{bashrc,sh} ./ || die
+        cp "${Kitname}"/shellkit/shellkit-loader.{bashrc,sh} ./ || die
 
     ) || exit 1
 }
@@ -224,9 +227,9 @@ main_base() {
             # with a symlink, we're hands-off and won't overwrite the content.
             die "$HOME/.local/bin/${Kitname} exists but is not a directory.  Refusing to overwrite"
         fi
-        command mkdir -p $HOME/.local/bin/${Kitname} || die "Failed creating $HOME/.local/bin/${Kitname}"
+        command mkdir -p "$HOME/.local/bin/${Kitname}" || die "Failed creating $HOME/.local/bin/${Kitname}"
     fi
-    if [[ $(inode $Script) -eq $(inode ${HOME}/.local/bin/${Kitname}/setup.sh) ]]; then
+    if [[ $(inode "$Script") -eq $(inode "${HOME}/.local/bin/${Kitname}/setup.sh") ]]; then
         # shellkit is designed to be re-installable from the original ~/.local/bin/ CONTENT,
         # but not from within the original LOCATION.  In other words, you can do a `cp -r ~/.local/bin/{kitname} /tmp/{kitname}`,
         # and then run setup.sh from /tmp/{kitname}.  That's OK, and setup will overwrite the original
@@ -235,13 +238,13 @@ main_base() {
         # into the container
         die "cannot run setup.sh from ${HOME}/.local/bin"
     fi
-    builtin cd ${HOME}/.local/bin/${Kitname} || die "101"
+    builtin cd "${HOME}/.local/bin/${Kitname}" || die "101"
     command rm -rf ./* ./.* &>/dev/null
     [[ -d ${scriptDir} ]] || die "bad scriptDir [$scriptDir]"
-    command cp -r ${scriptDir}/* ./ || die "failed copying from ${scriptDir} to $PWD"
-    builtin cd .. # Now were in .local/bin
-    command ln -sf ./${Kitname}/${Kitname}-version.sh ./ || die "102.2"
-    path_fixup_local_bin ${Kitname} || die "102.5"
+    command cp -r "${scriptDir}"/* ./ || die "failed copying from ${scriptDir} to $PWD"
+    builtin cd .. || die "101.2" # Now were in .local/bin
+    command ln -sf "./${Kitname}/${Kitname}-version.sh" ./ || die "102.2"
+    path_fixup_local_bin "${Kitname}" || die "102.5"
     install_realpath_sh || die "104.5"
     install_symlinks || die "105"
     install_loader || die "105.5"

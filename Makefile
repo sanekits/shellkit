@@ -23,6 +23,8 @@ MAKEFLAGS += --no-builtin-rules --no-print-directory
 
 absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
+#	PS4=$(PS4x)  # <-- Copy/uncomment this in recipe to enable smart PS4 
+PS4x='$$( _0=$$?;_1="$(notdir $@)";_2="$(realpath $(lastword $(MAKEFILE_LIST)))"; exec 2>/dev/null; echo "$${_2}|$${_1}@+$${LINENO} ^$$_0 $${FUNCNAME[0]:-?}()=>" ) '
 
 .PHONY: apply-version verbump update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft-upload release-list release-core release-core-upload release-upload
 
@@ -76,6 +78,7 @@ print-build-depends:
 shellkit-ref-validate:
 	@# If there's no shellkit-ref file, then the embedded shellkit branch should be 'main'
 	# If there IS a shellkit-ref file, then the embedded shellkit branch should match
+	PS4=$(PS4x)
 	die() {
 		echo "ERROR: $$*" >&2
 		exit 1

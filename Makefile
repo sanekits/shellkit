@@ -61,7 +61,7 @@ build_depends += shellkit/realpath.sh shellkit/setup-base.sh shellkit/shellkit-h
 build_depends += shellkit/loader/shellkit-loader.bashrc shellkit/loader/shellkit-loader.sh
 
 
-git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk {'print $$3'})
+git_remote := $(shell command git status -sb| command sed -e 's/\.\.\./ /' -e 's%/% %g' | command awk '{print $$3}')
 git_shellkit_remote := $(shell cd shellkit && git remote -v | grep -E '\(push\)' | awk '{print $$1}')
 
 next_steps_doc:=https://github.com/sanekits/shellkit/blob/main/docs/create-kit-next-steps.md
@@ -77,7 +77,6 @@ print-build-depends:
 .PHONY: shellkit-ref-validate
 shellkit-ref-validate:
 	@# If there's no shellkit-ref file, then the embedded shellkit branch should be 'main'
-	# If there IS a shellkit-ref file, then the embedded shellkit branch should match
 	PS4=$(PS4x)
 	die() {
 		echo "ERROR: $$*" >&2
@@ -163,15 +162,20 @@ install-kit:
 	tmp/latest.sh
 
 update-tag:
-	git tag ${version} -f
-	cd shellkit && git tag ${kitname}-${version} -f
+	@
+	PS4=$(PS4x)
+	git tag $(version) -f
+	cd shellkit && git tag $(kitname)-$(version) -f
 
 git-status-clean:
-	shellkit/git-status-clean.sh
+	shellkit/git-status-clean.sh || :
 
 push-tag:
-	git push ${git_remote} tag ${version} -f
-	cd shellkit && git push ${git_shellkit_remote} tag ${kitname}-${version} -f
+	@
+	PS4=$(PS4x)
+	set -x
+	git push $(git_remote) tag $(version) -f
+	cd shellkit && git push $(git_shellkit_remote) tag $(kitname)-$(version) -f
 
 apply-version: version $(version_depends)
 	# Apply the updated ./version to files which have

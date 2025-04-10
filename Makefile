@@ -191,12 +191,15 @@ publish-common: git-pull pre-publish ${publish_extra_files}
 	export PS4x=$(PS4x)
 	set -x
 	echo Copying extra files: ${publish_extra_files}
-	bash -xc 'PS4=$${PS4x}; \
-		if [[ -n "${publish_extra_files}" ]]; then \
-			cp ${publish_extra_files} ${HOME}/tmp/; \
-		else \
-			: \
-		fi;'
+	cat <<-EOF | bash -s -
+	PS4=$(PS4x)
+	set -x
+	if [[ -n "${publish_extra_files}" ]]; then 
+		cp ${publish_extra_files} ${HOME}/tmp/ 
+	else 
+		: 
+	fi
+	EOF
 
 git-pull:
 	@

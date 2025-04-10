@@ -11,13 +11,13 @@ canonpath() {
         return
     }
     # Ok for rough work only.  Prefer realpath.sh if it's on the path.
-    ( cd -L -- "$(dirname -- $1)"; echo "$(pwd -P)/$(basename -- $1)" )
+    ( cd -L -- "$(dirname -- "$1")" || exit; echo "$(pwd -P)/$(basename -- "$1")" )
 }
 
 Script=$(canonpath "$0")
 Scriptdir=$(command dirname "$Script")
 
-Kitname=$( command cat $(canonpath ${Scriptdir}/../bin/Kitname ))
+Kitname=$( command cat "$(canonpath "${Scriptdir}/../bin/Kitname" )")
 
 die() {
     builtin echo "ERROR: $*" >&2
@@ -40,24 +40,23 @@ checkTag() {
 
 if [[ -z $sourceMe ]]; then
     [[ -n $Kitname ]] || die 99
-    builtin cd ${Scriptdir}/../bin || die 100
+    builtin cd "${Scriptdir}/../bin" || die 100
     [[ -z $rawPublish ]] && {
             if [[ $( command git status -s .. | command wc -l 2>/dev/null) -gt 0 ]]; then
             die "One or more files in $PWD need to be committed before publish"
         fi
     }
     command git rev-parse HEAD > ./hashfile || die 104
-    builtin cd ${Scriptdir}/.. || die 101
-    version=$( bin/${Kitname}-version.sh | cut -f2)
+    builtin cd "${Scriptdir}/.." || die 101
+    version=$( "bin/${Kitname}-version.sh" | cut -f2)
     [[ -z $version ]] && die 103
-    checkTag  ${version} || die 103.4
+    checkTag  "${version}" || die 103.4
 
     command mkdir -p ./tmp
 
     destFile=$PWD/tmp/${Kitname}-setup-${version}.sh
-    ${Scriptdir}/makeself.sh --follow --base64 $PWD/bin $destFile "${Kitname} ${version}" ./setup.sh  || die # [src-dir] [dest-file] [label] [setup-command]
+    "${Scriptdir}/makeself.sh" --follow --base64 "$PWD/bin" "$destFile" "${Kitname} ${version}" ./setup.sh  || die # [src-dir] [dest-file] [label] [setup-command]
     (
-        cd $(dirname $destFile) && ln -sf $(basename $destFile) latest.sh
-    )
-    [[ $? -eq 0 ]] && echo "Done: upload $PWD/tmp/${Kitname}-setup-${version}.sh to Github release page "
+        cd "$(dirname "$destFile")" && ln -sf "$(basename "$destFile")" latest.sh
+    ) && echo "Done: upload $PWD/tmp/${Kitname}-setup-${version}.sh to Github release page "
 fi

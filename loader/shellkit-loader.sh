@@ -15,16 +15,17 @@
 scriptName="$(readlink -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 
-PS4='\033[0;33m+(${BASH_SOURCE}:${LINENO}):\033[0m ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
-
+#shellcheck disable=2154
+PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]:-_unk_}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
 
 
 die() {
-    builtin echo "ERROR($(basename ${scriptName})): $*" >&2
+    builtin echo "ERROR($(basename "${scriptName}")): $*" >&2
     builtin exit 1
 }
 
-SHELLKIT_LOAD_DISABLE=1 source ${scriptDir}/shellkit-loader.bashrc
+#shellcheck disable=1091
+SHELLKIT_LOAD_DISABLE=1 source "${scriptDir}/shellkit-loader.bashrc"
 [[ -n $SHELLKIT_LOADER_VER ]] || die "Missing ${scriptDir}/shellkit-loader.bashrc or SHELLKIT_LOADER_VER not defined"
 
 stub() {
@@ -42,27 +43,24 @@ get_kit_depends() {
     #     kit3 -
     # When the dependency is '-', it's just filler to ensure
     # all dependents are included in the output.
-    local kitnames=()
-    kitnames+=( $(command ls */Kitname 2>/dev/null | command xargs dirname 2>/dev/null) )
-
-    for kit in ${kitnames[@]}; do
-        printf "${kit} -\n"
+    while read -r kit; do
+        printf "%s -\n" "${kit}"
         [[ -f ${kit}/load-depends ]] && {
             # We want one or more lines like [kitname] [dependency]
             # as input for tsort:
-            grep -Ev ' *#' ${kit}/load-depends | sed "s/^/${kit} /"
+            grep -Ev ' *#' "${kit}/load-depends" | sed "s/^/${kit} /"
         }
-    done
+    done < <( command ls ./*/Kitname 2>/dev/null | command xargs dirname 2>/dev/null )
 }
 
 format_tsort_errs() {
     local first=true
-    while read line; do
+    while read -r line; do
         $first && {
-            printf "ERROR($(basename ${scriptName})): dependency sorting error -- "
+            printf "ERROR(%s): dependency sorting error " "$(basename "$scriptName")"
             first=false
         }
-        printf "   ${line}\n"
+        printf "   %s\n" "${line}"
     done >&2
 }
 
@@ -71,15 +69,14 @@ get_sorted_kitnames() {
 }
 
 main() {
-    #stub shellkit-loader-args "$@"
-    [[ -n $SHLOADER_DIR ]] && {
-        cd $SHLOADER_DIR || die Failed to cd to $SHLOADER_DIR;
-    } || {
-        cd ${HOME}/.local/bin || die Failed to cd to ${HOME}/.local/bin
-    }
-    while read kit; do
+    if [[ -n $SHLOADER_DIR ]]; then
+        cd "$SHLOADER_DIR" || die Failed to cd to "$SHLOADER_DIR"
+    else
+        cd "${HOME}/.local/bin" || die Failed to cd to "${HOME}/.local/bin"
+    fi
+    while read -r kit; do
         [[ -d ${kit} ]] || {
-            echo "ERROR($(basename $scriptName)): shellkit ${kit} is referenced as a dependency but is not installed in ~/.local/bin/${kit}"
+            echo "ERROR($(basename "$scriptName")): shellkit ${kit} is referenced as a dependency but is not installed in ~/.local/bin/${kit}"
             echo "The shellkit dependency graph is :"
             (
                 echo $'source:\tdepends-on:'
@@ -97,7 +94,7 @@ main() {
 
 [[ -z ${sourceMe} ]] && {
     case $1 in
-        --version|-v) echo $SHELLKIT_LOADER_VER; exit 0;;
+        --version|-v) echo "$SHELLKIT_LOADER_VER"; exit 0;;
     esac
     main "$@"
     builtin exit

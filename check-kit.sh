@@ -1,6 +1,9 @@
 #!/bin/bash
 # check-kit.sh:  integrity check for a shellkit-based  tool.  Checks for compatibility and common errors pre-publish
 
+#shellcheck disable=2154
+PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]:-_unk_}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
+
 canonpath() {
     builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"
@@ -37,7 +40,7 @@ checkLocalTag() {
     #   - Function returns 0 and prints nothing
     # Otherwise:
     #   - Function returns nonzero and prints warning
-    local _version;version=$(cat ./version)
+    local _version;_version=$(cat ./version)
     [[ -z $_version ]] && die "No version detected in checkLocalTag"
 
     local version="${_version//./\~}"

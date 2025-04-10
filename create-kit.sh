@@ -7,7 +7,7 @@
 scriptName="$(command realpath.sh -f "$0")"
 scriptDir=$(command dirname -- "${scriptName}")
 #shellcheck disable=2154
-PS4='$( exec 2>/dev/null; set +u; bx="${BASH_SOURCE[0]:-_unk_}"; [[ -z "$bx" ]] || realpath -- "$bx" || echo "$bx"):${LINENO} +$? ${FUNCNAME[0]:+${FUNCNAME[0]}()| }'
+PS4='$( _0=$?; exec 2>/dev/null; realpath -- "${BASH_SOURCE[0]:-?}:${LINENO} ^$_0 ${FUNCNAME[0]:-?}()=>" ) '
 
 die() {
     builtin echo "ERROR($(basename "$scriptName")): $*" >&2

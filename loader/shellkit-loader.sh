@@ -57,7 +57,7 @@ format_tsort_errs() {
     local first=true
     while read -r line; do
         $first && {
-            printf "ERROR(%s): dependency sorting error " "$(basename "$scriptName")"
+            printf "ERROR(%s): dependency sorting error -- " "$(basename "$scriptName")"
             first=false
         }
         printf "   %s\n" "${line}"

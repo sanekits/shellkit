@@ -133,7 +133,7 @@ install_symlinks() {
     builtin read -ra symlinks < <( command sed -e 's/#.*//'  ./"${Kitname}"/_symlinks_ | command tr '\n' ' ' )
     while read -r item; do
         command ln -sf "${Kitname}/${item}" "./$(basename -- "${item}")" || die "Failed installing symlink ${item}"
-    done <<< "${symlinks[@]}" 
+    done < <( printf "%s\n" "${symlinks[@]}" )
 }
 
 version_lt() {

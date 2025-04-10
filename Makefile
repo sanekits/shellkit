@@ -186,16 +186,23 @@ pre-publish: apply-version build git-status-clean update-tag check-kit tmp/$(set
 	@echo pre-publish completed OK
 
 publish-common: git-pull pre-publish ${publish_extra_files}
-	@# Common logic needed to publish a kit
-	@echo Copying extra files: ${publish_extra_files}
-	@bash -c '[[ -n "${publish_extra_files}" ]] \
-		&& { \
+	@
+	# Common logic needed to publish a kit
+	export PS4x=$(PS4x)
+	set -x
+	echo Copying extra files: ${publish_extra_files}
+	bash -xc 'PS4=$${PS4x}; \
+		if [[ -n "${publish_extra_files}" ]]; then \
 			cp ${publish_extra_files} ${HOME}/tmp/; \
-		} || { :; } '
+		else \
+			: \
+		fi;'
 
 git-pull:
-	cd shellkit && command git pull && git status
-	command git pull && git status
+	@
+	PS4=$(PS4x)
+	cd shellkit && command git pull --no-tags && git status
+	command git pull --no-tags && git status
 
 git-push:
 	cd shellkit && command git push && git status

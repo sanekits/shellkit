@@ -44,6 +44,6 @@ shellkit_loader() {
     builtin cd "${orgDir}" || return
 }
 
-[[ -z $SHELLKIT_LOAD_DISABLE ]] && {
+[[ -z ${SHELLKIT_LOAD_DISABLE:-} ]] && {
     shellkit_loader
 }

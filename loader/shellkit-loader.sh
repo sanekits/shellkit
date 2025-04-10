@@ -50,7 +50,7 @@ get_kit_depends() {
             # as input for tsort:
             grep -Ev ' *#' "${kit}/load-depends" | sed "s/^/${kit} /"
         }
-    done < <( command ls ./*/Kitname 2>/dev/null | command xargs dirname 2>/dev/null )
+    done < <( command ls ./*/Kitname 2>/dev/null | cut -c 3- | command xargs dirname 2>/dev/null )
 }
 
 format_tsort_errs() {

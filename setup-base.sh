@@ -131,24 +131,22 @@ install_symlinks() {
     #   make symlink in . for each name in ${Kitname}/_symlinks_
     [[ -f ./${Kitname}/_symlinks_ ]] || { true; return; }
     builtin read -ra symlinks < <( command sed -e 's/#.*//'  ./"${Kitname}"/_symlinks_ | command tr '\n' ' ' )
-    while read -r; do
+    while read -r item; do
         command ln -sf "${Kitname}/${item}" "./$(basename -- "${item}")" || die "Failed installing symlink ${item}"
     done <<< "${symlinks[@]}" 
 }
 
 version_lt() {
-    # Returns true if left < right for 3-tuple version numbers
-    (
-        IFS="." read  -r l0 l1 l2 <<< "$1"
-        IFS="." read  -r r0 r1 r2 <<< "$2"
-        (( l0 < r0 )) && exit
-        (( l0 == r0 )) || exit
-        (( l1 < r1 )) && exit
-        (( l1 == r1 )) || exit
-        (( l2 < r2 )) && exit
-        false
-    )
+    # Returns true if left < right for 3-segment version numbers
+    IFS='.' read -r -a left <<< "$1"
+    IFS='.' read -r -a right <<< "$2"
+    for i in {0..2}; do
+        [[ ${left[i]} -lt ${right[i]} ]] && return 0
+        [[ ${left[i]} -gt ${right[i]} ]] && return 1
+    done
+    return 1  # Versions are equal or left is not less than right
 }
+
 
 install_realpath_sh() {
     # When:

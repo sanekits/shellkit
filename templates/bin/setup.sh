@@ -5,6 +5,12 @@
 # by the main_base() call, but after that you can add your own logic
 # and installation steps.
 
+
+# The shellkit/ tooling naturally evolves out from under the dependent kits.  ShellkitSetupVers allows
+# detecting the need for refresh of setup.sh et.al.
+#shellcheck disable=2034
+ShellkitSetupVers=2
+
 canonpath() {
     builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"

@@ -4,6 +4,14 @@
 # get the home install path for the tool
 KitVersion=0.1.0
 
+# The shellkit/ tooling naturally evolves out from under the dependent kits.  ShellkitSetupVers allows
+# detecting the need for refresh of templates/* derived files.  To bump the root version, 
+# zap all templates/* containing 'ShellkitTemplateVers' constants and changes to the corresponding dependent kits
+# Note that within templates/* there may be diverse versions in upstream shellkit, they don't all have to match,
+# but the derived copies should be sync'ed with upstream as needed.
+#shellcheck disable=2034
+ShellkitTemplateVers=2
+
 canonpath() {
     builtin type -t realpath.sh &>/dev/null && {
         realpath.sh -f "$@"

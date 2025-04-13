@@ -14,7 +14,6 @@
 #  Using a kit-local Makefile
 #    - Must be named {root}/make-kit.mk
 
-Makefile: ;
 SHELL=/bin/bash
 .ONESHELL:
 .SUFFIXES:
@@ -26,7 +25,11 @@ absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 #	PS4=$(PS4x)  # <-- Copy/uncomment this in recipe to enable smart PS4 
 PS4x='$$( _0=$$?;_1="$(notdir $@)";_2="$(realpath $(lastword $(MAKEFILE_LIST)))"; exec 2>/dev/null; echo "$${_2}|$${_1}@+$${LINENO} ^$$_0 $${FUNCNAME[0]:-?}()=>" ) '
 
+foo:
+	echo This is $@
+
 .PHONY: apply-version verbump update-tag push-tag check-kit create-kit erase-kit build clean pre-publish publish-common git-pull git-push git-status release-draft-upload release-list release-core release-core-upload release-upload
+
 
 # Given:
 #   - Kit has files to be packaged
@@ -250,3 +253,5 @@ release-list:
 	mkdir -p shellkit
 	cd shellkit
 	ln -sf ../../shellkit/{realpath,setup-base,loader/shellkit-loader}.sh ../../shellkit/loader/shellkit-loader.bashrc  ./
+
+Makefile: ;

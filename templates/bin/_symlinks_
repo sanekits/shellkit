@@ -10,4 +10,5 @@
 #   - (${SHELLKIT_HELP_SYMBOL} expands to the script name to avoid repetition.)
 #   my-script.sh #help@ ${SHELLKIT_HELP_SYMBOL} --help
 #
+# shellcheck disable=all
 <Kitname>.sh

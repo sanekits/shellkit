@@ -1,4 +1,4 @@
-#shellcheck disable=all
+#shellcheck shell=bash
 # <Kitname>.bashrc - shell init file for <Kitname> sourced from ~/.bashrc
 
 <Kitname>-semaphore() {

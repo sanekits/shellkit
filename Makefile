@@ -20,7 +20,8 @@ SHELL=/bin/bash
 .SHELLFLAGS = -uec
 MAKEFLAGS += --no-builtin-rules --no-print-directory
 
-absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+# Beware: absdir points to <kitname>/shellkit NOT <kitname>!
+absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST) )))
 
 #	PS4=$(PS4x)  # <-- Copy/uncomment this in recipe to enable smart PS4 
 PS4x='$$( _0=$$?;_1="$(notdir $@)";_2="$(realpath $(lastword $(MAKEFILE_LIST)))"; exec 2>/dev/null; echo "$${_2}|$${_1}@+$${LINENO} ^$$_0 $${FUNCNAME[0]:-?}()=>" ) '

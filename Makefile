@@ -54,6 +54,8 @@ kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
 Ghx := GH_TOKEN=$$GH_TOKEN_2 command gh
 ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f "$${dir}/.shellkit-workspace" ]] && { ( cd "$${dir}"; pwd ); break; }; done )
+DockertestDir := $(realpath $(kitdir)/../docker-test/bin)
+DockertestRun := SHK_WORKAREA=$(kitdir) $(DockertestDir)/docker-test.sh
 
 -include ./make-kit.mk  # Project-specific makefile
 
@@ -132,34 +134,15 @@ check-kit: check-shellkit
 	./shellkit/check-kit.sh || :
 
 
+KeepShell = 0   # 0=no, 1=pause before test, 2=pause after test
 .PHONY: conformity-check
 conformity-check:
-    #  Options:
-    # - KeepShell=1  -- to avoid closing the container after conformity checks
-    # - WriteableWorkspace=1 -- to allow writing to the workspace share from within container
-
-    #  Note: container-test.sh maps the ~/.local/bin dir to a host-side /tmp/fakelocalbin-latest symlink
-    #     that points to a temp dir.  This allows the dev to easily follow the changes
-    #     in the container made to the install root.
 	@ set +ue
-	[[ -n "$(KeepShell)" ]] \
-		&& stay="--keep-shell" || : ;
+    #  Options:
+    # - KeepShell=1  -- sleep before running conformity check.  
+    # - KeepShell=2  -- sleep after running conformity check.
+	KeepShell=$(KeepShell) $(DockertestRun) conformity-check
 
-	[[ -n "$(WriteableWorkspace)" ]] \
-		&& writeable_workspace="-w" || : ;
-	Command="shellkit/conformity/conformity-check.sh --kit $(kitname)" \
-	shellkit/container-test.sh --component shellkit-conformity $$stay $$writeable_workspace
-
-	# ^^ Run container-test.sh, have it launch the shellkit-conformity component, and
-	#   then run our conformity-check.sh script
-
-    #  If KeepShell=1, the temp dir is not destroyed on container exit.
-	if [[ -z "$(KeepShell)" ]]; then
-		if [[ -d "$$tmpLocalBin" ]]; then
-			rm -rf "$$tmpLocalBin" || :
-		fi
-	fi
-	true
 
 
 erase-kit:

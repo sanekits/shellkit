@@ -22,6 +22,8 @@ MAKEFLAGS += --no-builtin-rules --no-print-directory
 
 # Beware: absdir points to <kitname>/shellkit NOT <kitname>!
 absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST) )))
+# kitdir does not contain the troublesome trailing / !
+kitdir := $(realpath $(absdir)..)
 
 #	PS4=$(PS4x)  # <-- Copy/uncomment this in recipe to enable smart PS4 
 PS4x='$$( _0=$$?;_1="$(notdir $@)";_2="$(realpath $(lastword $(MAKEFILE_LIST)))"; exec 2>/dev/null; echo "$${_2}|$${_1}@+$${LINENO} ^$$_0 $${FUNCNAME[0]:-?}()=>" ) '
@@ -106,12 +108,15 @@ verbump:
 	./shellkit/version-bump.sh ./version
 
 tmp/$(setup_script) tmp/latest.sh build-hash: $(build_depends)
+	@
+	PS4=$(PS4x)
 	mkdir -p ./tmp && \
-    shellkit/makeself.sh --follow --base64 ./bin tmp/$(setup_script) "${kitname} ${version} setup" ./setup.sh
+		shellkit/makeself.sh --follow --base64 ./bin tmp/$(setup_script) "${kitname} ${version} setup" ./setup.sh
 	ln -sf $(setup_script) tmp/latest.sh
 	/bin/bash -x tmp/latest.sh --list 2>&1 | grep -E '\+ MD5=' | sed 's/+ MD5=//' > build-hash
-	-git add build-hash && git commit build-hash -m "build-hash updated"
-	@echo "Done: ${kitname}:${version} $$(cat build-hash)"
+	git add build-hash
+	git commit build-hash -m "build-hash updated" ||  :
+	echo "Done: ${kitname}:${version} $$(cat build-hash)"
 
 
 create-kit: shellkit/.git
@@ -177,7 +182,6 @@ git-status-clean:
 push-tag:
 	@
 	PS4=$(PS4x)
-	set -x
 	git push $(git_remote) tag $(version) -f
 	cd shellkit && git push $(git_shellkit_remote) tag $(kitname)-$(version) -f
 
@@ -193,11 +197,9 @@ publish-common: git-pull pre-publish ${publish_extra_files}
 	@
 	# Common logic needed to publish a kit
 	export PS4x=$(PS4x)
-	set -x
 	echo Copying extra files: ${publish_extra_files}
 	cat <<-EOF | bash -s -
 	PS4=$(PS4x)
-	set -x
 	if [[ -n "${publish_extra_files}" ]]; then 
 		cp ${publish_extra_files} ${HOME}/tmp/ 
 	else 
@@ -249,7 +251,6 @@ release-list:
 
 .fix-shellkit-symlinks:
 	@
-	set -x
 	cd bin
 	mkdir -p shellkit
 	cd shellkit

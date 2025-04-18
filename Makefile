@@ -239,4 +239,25 @@ release-list:
 	cd shellkit
 	ln -sf ../../shellkit/{realpath,setup-base,loader/shellkit-loader}.sh ../../shellkit/loader/shellkit-loader.bashrc  ./
 
+..PHONY: docker-lab
+docker-lab:
+	@
+	# Creates a containerized testing environment.  Kits can define prereqs for the .docker-lab-postcreate to 
+	# customize the state of the container after creation.  
+	#    - The hooks will run inside the container after creation (during entrypoint)
+	# 	 - The /workarea of the container is the root of the kit source tree
+	#    - /bb-shellkit is a readonly mount of the environment root
+	#    - /share is a docker volume mounted read/write
+	#    - /host-dotfiles is a readonly clone of the host's dotfiles dir
+	#
+	#   Example post-create hook (in make-kit.mk):
+	#      .docker-lab-postcreate: .my-hook
+	#      .my-hook:
+	#          # Do something to prepare the container here
+	@
+	$(kitdir)/shellkit/docker-lab/start-lab.sh $(DockerlabStartArgs)
+
+.docker-lab-postcreate:
+	@ # This is just a dependency hook: add depends to this which will run during docker-lab entrypoint
+
 Makefile: ;

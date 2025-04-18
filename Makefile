@@ -255,7 +255,7 @@ docker-lab:
 	#      .my-hook:
 	#          # Do something to prepare the container here
 	@
-	$(kitdir)/shellkit/docker-lab/start-lab.sh $(DockerlabStartArgs)
+	$(DockertestRun) docker-lab
 
 .docker-lab-postcreate:
 	@ # This is just a dependency hook: add depends to this which will run during docker-lab entrypoint

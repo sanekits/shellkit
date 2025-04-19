@@ -103,8 +103,11 @@ shellkit-ref-validate:
 
 tree-setup: shellkit-ref-validate
 
+ifdef NoDefaultBuild
+# If NoDefaultBuild is defined, this  build target will not be available
+else
 build: tree-setup tmp/$(setup_script) build-hash
-
+endif
 
 verbump:
 	./shellkit/version-bump.sh ./version

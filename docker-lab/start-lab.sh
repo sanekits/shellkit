@@ -25,7 +25,7 @@ main() {
         mkdir "${labData}"
         chown 1000:1000 "${labData}"
     }
-    docker compose run --rm docker-lab 
+    docker compose run --rm docker-lab "$@"
 }
 
 if [[ -z "${sourceMe}" ]]; then

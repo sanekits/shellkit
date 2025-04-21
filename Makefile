@@ -20,10 +20,14 @@ SHELL=/bin/bash
 .SHELLFLAGS = -uec
 MAKEFLAGS += --no-builtin-rules --no-print-directory
 
+
 # Beware: absdir points to <kitname>/shellkit NOT <kitname>!
 absdir := $(dir $(realpath $(lastword $(MAKEFILE_LIST) )))
 # kitdir does not contain the troublesome trailing / !
 kitdir := $(realpath $(absdir)..)
+
+Flag := $(kitdir)/tmp/flag
+Finit := $(Flag)/.init
 
 #	PS4=$(PS4x)  # <-- Copy/uncomment this in recipe to enable smart PS4 
 PS4x='$$( _0=$$?;_1="$(notdir $@)";_2="$(realpath $(lastword $(MAKEFILE_LIST)))"; exec 2>/dev/null; echo "$${_2}|$${_1}@+$${LINENO} ^$$_0 $${FUNCNAME[0]:-?}()=>" ) '
@@ -101,7 +105,7 @@ shellkit-ref-validate:
 	[[ $$shkbranch == main ]] \
 		|| die "current shellkit branch should be 'main' because there's no ./shellkit-ref";
 
-tree-setup: shellkit-ref-validate
+tree-setup: $(Finit) shellkit-ref-validate
 
 ifdef NoDefaultBuild
 # If NoDefaultBuild is defined, this  build target will not be available
@@ -262,5 +266,9 @@ docker-lab:
 
 .docker-lab-postcreate:
 	@ # This is just a dependency hook: add depends to this which will run during docker-lab entrypoint
+
+$(Finit) .finit:
+	mkdir -p $(Flag)
+	touch $(Finit)
 
 Makefile: ;

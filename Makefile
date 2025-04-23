@@ -255,14 +255,21 @@ docker-lab:
 	# 	 - The /workarea of the container is the root of the kit source tree
 	#    - /bb-shellkit is a readonly mount of the environment root
 	#    - /share is a docker volume mounted read/write
-	#    - /host-dotfiles is a readonly clone of the host's dotfiles dir
+	#    - /host_home exposes selected subdirs as readonly
 	#
 	#   Example post-create hook (in make-kit.mk):
 	#      .docker-lab-postcreate: .my-hook
 	#      .my-hook:
 	#          # Do something to prepare the container here
 	@
-	$(DockertestRun) docker-lab
+	$(DockertestRun)  docker-lab
+
+docker-testlab:
+	@  # Same as docker-lab target, except we do not trigger the .docker-lab-postcreate target.
+	   # (which makes it easier to debug that sort of thing or not have it interfere with exploration)
+	echo "Launching docker-testlab.  This will not invoke .docker-lab-postcreate."
+	echo "Use jumpstart_ep to init environment."
+	$(DockertestRun) --no-postcreate docker-lab
 
 .docker-lab-postcreate:
 	@ # This is just a dependency hook: add depends to this which will run during docker-lab entrypoint

@@ -26,7 +26,7 @@ canonpath() {
     ( builtin cd -L -- "$(command dirname -- "$0")" || exit; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
-Script="${scriptName:-"$(canonpath "$0")"}"
+Script="${Script:-"$(canonpath "$0")"}"
 Scriptdir=$(dirname -- "$Script")
 
 

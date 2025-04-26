@@ -9,7 +9,7 @@ make-kit.mk: ;
 # zap all templates/* containing 'ShellkitTemplateVers' constants and changes to the corresponding dependent kits
 # Note that within templates/* there may be diverse versions in upstream shellkit, they don't all have to match,
 # but the derived copies should be sync'ed with upstream as needed.
-ShellkitTemplateVers=2
+ShellkitTemplateVers=3
 
 # TODO: update kit_depends to include anything which
 #   might require the kit version to change as seen

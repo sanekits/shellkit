@@ -15,7 +15,7 @@ canonpath() {
 }
 
 
-scriptName="$(canonpath "$0")"
+scriptName="${scriptName:-"$(canonpath "$0")"}"
 
 die() {
     builtin echo "ERROR($(basename "${scriptName}"): $*" >&2

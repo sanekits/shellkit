@@ -10,7 +10,7 @@ KitVersion=0.1.0
 # Note that within templates/* there may be diverse versions in upstream shellkit, they don't all have to match,
 # but the derived copies should be sync'ed with upstream as needed.
 #shellcheck disable=2034
-ShellkitTemplateVers=2
+ShellkitTemplateVers=3
 
 canonpath() {
     builtin type -t realpath.sh &>/dev/null && {
@@ -25,7 +25,7 @@ canonpath() {
     ( builtin cd -L -- "$(command dirname -- "$0")" || exit; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
 }
 
-Script=$(canonpath "$0")
+Script="${scriptName:-"$(canonpath "$0")"}"
 Scriptdir=$(dirname -- "$Script")
 
 

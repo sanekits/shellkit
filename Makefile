@@ -140,6 +140,27 @@ check-shellkit:
 check-kit: check-shellkit
 	./shellkit/check-kit.sh || :
 
+$(Flag)/reconcile-kit reconcile-kit:  $(Finit)
+	@# Present template-based kit files for manual diff/reconciliation with template
+	PS4=$(PS4x)	
+	#set -x
+	errs=()
+	set +u
+	while read -r tmplfile kitfile ; do
+		[[ -n $$tmplfile ]] || { errs+=("WARNING: Can't find one or both of $$kitfile $$tmpfile"); continue; }
+		$(shell shellkit/which-code.sh) --diff $$tmplfile $$kitfile -w
+	done < <( printf "%s %s\n" "shellkit/templates/make-kit.mk.template ./make-kit.mk
+		shellkit/templates/bin/setup.sh bin/setup.sh
+		shellkit/templates/bin/kitname-version.sh bin/$(kitname)-version.sh
+		shellkit/templates/bin/kitname.sh bin/$(kitname).sh "
+	)
+	if [[ $${#errs} -gt 0 ]]; then
+		printf "Errors:  " ; printf "%s\n" "${errs[@]}"
+		exit 1
+	fi
+	read -p "Hit Enter to mark reconciliation flag or Ctrl+C to abort"
+	touch $(Flag)/reconcile-kit
+
 
 KeepShell = 0   # 0=no, 1=pause before test, 2=pause after test
 .PHONY: conformity-check

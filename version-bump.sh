@@ -2,7 +2,7 @@
 # version-bump.sh <version-file-path>
 # Increment the version file path.  We only permit 1 digit per segment, so 0.0.9 wraps to 0.1.0, etc.
 
-scriptName="$(readlink -f "$0")"
+scriptName="${scriptName:-"$(readlink -f "$0")"}"
 #shellcheck disable=2154
 PS4='$( _0=$?; exec 2>/dev/null; realpath -- "${BASH_SOURCE[0]:-?}:${LINENO} ^$_0 ${FUNCNAME[0]:-?}()=>" ) '
 

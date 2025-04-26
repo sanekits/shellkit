@@ -12,7 +12,7 @@
 # stderr, but continues with a best-effort to yield the
 # load order list anyway.
 
-scriptName="$(readlink -f "$0")"
+scriptName="${scriptName:-"$(readlink -f "$0")"}"
 scriptDir=$(command dirname -- "${scriptName}")
 
 #shellcheck disable=2154

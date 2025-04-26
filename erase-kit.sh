@@ -1,7 +1,7 @@
 #!/bin/bash
 # erase-kit.sh
 
-scriptName="$(command readlink -f "$0")"
+scriptName="${scriptName:-"$(command readlink -f "$0")"}"
 
 die() {
     builtin echo "ERROR($(basename "${scriptName}")): $*" >&2

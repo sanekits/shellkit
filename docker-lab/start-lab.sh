@@ -2,7 +2,7 @@
 # start-lab.sh: create a docker-lab container and 
 # call the kit's .docker-lab-postcreate hook to customize it
 
-scriptName="$(readlink -f "$0")"
+scriptName="${scriptName:-"$(readlink -f "$0")"}"
 scriptDir=$(command dirname -- "${scriptName}")
 #shellcheck disable=2154
 PS4='$( _0=$?; exec 2>/dev/null; realpath -- "${BASH_SOURCE[0]:-?}:${LINENO} ^$_0 ${FUNCNAME[0]:-?}()=>" ) '

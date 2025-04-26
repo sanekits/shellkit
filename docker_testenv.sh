@@ -6,7 +6,7 @@ die() {
     exit 1
 }
 
-scriptName=$(readlink -f -- "$0")
+scriptName="${scriptName:-"$(readlink -f -- "$0")"}"
 
 stubShell() {
     echo "stubShell: do exit to continue" >&2

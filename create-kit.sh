@@ -4,7 +4,7 @@
 
 [[ -x shellkit/realpath.sh ]] || die "$0 cannot find shellkit/realpath.sh"
 
-scriptName="$(command realpath.sh -f "$0")"
+scriptName="${scriptName:-"$(command realpath.sh -f "$0")"}"
 scriptDir=$(command dirname -- "${scriptName}")
 #shellcheck disable=2154
 PS4='$( _0=$?; exec 2>/dev/null; realpath -- "${BASH_SOURCE[0]:-?}:${LINENO} ^$_0 ${FUNCNAME[0]:-?}()=>" ) '

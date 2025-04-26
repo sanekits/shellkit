@@ -1,7 +1,7 @@
 #!/bin/bash
 # apply-version.sh
 
-scriptName="$(command readlink -f "$0")"
+scriptName="${scriptName:-"$(command readlink -f "$0")"}"
 scriptDir=$(command dirname -- "${scriptName}")
 
 die() {

@@ -40,6 +40,7 @@ die() {
 }
 
 main() {
+    #shellcheck disable=2154
     [[ -f $ComponentDockerMakefile ]] \
         || die 100
 
@@ -61,7 +62,7 @@ main() {
 
     # Create+launch the container:
 	local volumes="-v ${PWD}:/workspace${Read_only_workspace}  \
-        -v ${tmpLocalBin}:/home/vscode/.local/bin  \
+        -v ${tmpLocalBin}:/home/vscode/.local/bin"  
     echo "Command=${Command}"
     echo "Component=${Component}"
     make -f "${ComponentDockerMakefile}" \

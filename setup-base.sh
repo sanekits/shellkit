@@ -14,18 +14,6 @@ die2() {
     exit 2
 }
 
-canonpath() {
-    builtin type -t realpath.sh &>/dev/null && {
-        realpath.sh -f "$@"
-        return
-    }
-    builtin type -t readlink &>/dev/null && {
-        command readlink -f "$@"
-        return
-    }
-    # Fallback: Ok for rough work only, does not handle some corner cases:
-    ( builtin cd -L -- "$(command dirname -- "$0")" || return; builtin echo "$(command pwd -P)/$(command basename -- "$0")" )
-}
 
 reload_reqd=false
 
@@ -38,45 +26,28 @@ inode() {
     ( command ls -i "$1" | command awk '{print $1}') 2>/dev/null
 }
 
-is_on_path() {
-    # Return true if $1 is on the PATH
-    local tgt_dir="$1"
-    [[ -z $tgt_dir ]] && { true; return; }
-    while read -r v; do
-        if [[ "$tgt_dir" == "$v" ]]; then
-            return
-        fi
-    done < <( echo "${PATH}" | tr ':' '\n' )
-    false
-}
-
-localbin_semaphore() {
-    cat <<-EOF
-#!/bin/sh
-true
-EOF
-}
 
 path_fixup_local_bin() {
     # Add ~/.local/bin to the PATH if it's not already.  Modify
     # either .bash_profile or .profile honoring bash startup rules.
     local kitname="${1}"
     [[ -z $kitname ]] && kitname="shellkit"
-    ( # Create a semaphore script in ~/.local/bin.  If we can run it without specifying path, we're good.
-        builtin cd
-        semaphore=_semaphore_$$
-        mkdir -p "${HOME}/.local/bin"
-        [[ -d ${HOME}/.local/bin ]] || die2 "Failed to create ${HOME}/.local/bin"
-        localbin_semaphore > "${HOME}/.local/bin/${semaphore}"
-        command chmod +x ~/.local/bin/${semaphore}
-        if ! command bash -l -c "${semaphore}" &>/dev/null; then
-            exit 1  # .local/bin is not on the PATH
+    (
+        mkdir -p "$HOME/.local/bin"
+        [[ -d $HOME/.local/bin ]] || die2 "(detecting) Failed to create ${HOME}/.local/bin [@${BASH_SOURCE[0]}:${LINENO}]"
+        # Test path for ~/.local/bin
+        if bash -l - < <( cat <<-"EOF"
+            [[ :"$PATH": == *:$HOME/.local/bin:* ]]
+EOF
+        ); then
+            exit 0
         fi
-        rm ~/.local/bin/${semaphore}
-        true # .local/bin is already on the PATH
+        echo "(detecting) $HOME/.local/bin is not on the PATH [@${BASH_SOURCE[0]}:${LINENO}]" >&2
+        false
+
     ) && { true; return; }
     [[ $? -eq 2 ]] && die "path_fixup_local_bin failed"
-    echo '\~/.local/bin is not on the path. Fixing profile.' >&2
+    echo '(correcting) fixing profile:' >&2
     (
         local profile=.bash_profile
         [[ -f ${HOME}/${profile} ]] || profile=.profile
@@ -84,7 +55,7 @@ path_fixup_local_bin() {
         echo "export PATH=\${HOME}/.local/bin:\$PATH # Added by ${kitname}" > "${tmp_profile}" || die2 3092
         [[ -e ~/${profile} ]] && cat ~/${profile} >> "${tmp_profile}"
         mv "$tmp_profile" ~/${profile} || die 203
-        echo "WARNING: ${HOME}/.local/bin was added to your PATH by modifying ~/${profile}.  (Using this dir is a normal convention, but changes to the PATH can sometimes produce unwanted side-effects.)" >&2
+        echo "WARNING(correcting): ${HOME}/.local/bin was added to your PATH by modifying ~/${profile}.  (Using this dir is a normal convention, but changes to the PATH can sometimes produce unwanted side-effects.)" >&2
     ) || die
 
     reload_reqd=true
@@ -157,7 +128,7 @@ install_realpath_sh() {
     # Then:
     #   copy ${Kitname}/shellkit/realpath.sh to ./realpath.sh
     local ourVers; ourVers="$( "${Kitname}/shellkit/realpath.sh" --version )"
-    #shellcheck disable=2046 
+    #shellcheck disable=2046
     [[ -n $ourVers ]] || return $(die "Failed testing realpath.sh version in kit")
     [[ -f ./realpath.sh ]] && {
         # Is the installed version > our version?

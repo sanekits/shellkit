@@ -3,7 +3,7 @@
 # Runs in Docker during pre-publish phase to verify that the installed kit
 # meets common feature and interface expectations.  See shellkit/docs/loader.md
 
-scriptName="${scriptName "$(readlink -f "$0")"}"
+scriptName="${scriptName:-"$(readlink -f "$0")"}"
 
 #shellcheck disable=2154
 PS4='$( _0=$?; exec 2>/dev/null; realpath -- "${BASH_SOURCE[0]:-?}:${LINENO} ^$_0 ${FUNCNAME[0]:-?}()=>" ) '

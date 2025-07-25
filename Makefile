@@ -56,7 +56,7 @@ none:
 version := $(shell cat ./version)
 kitname := $(shell cat bin/Kitname)
 setup_script := $(kitname)-setup-$(version).sh
-Ghx := GH_TOKEN=$$GH_TOKEN_2 command gh
+Ghx := GH_TOKEN=$$GH_SHELLKIT_TOKEN command gh
 ShellkitWorkspace:=$(shell for dir in .. ../.. ../../.. ../../../..; do  [[ -f "$${dir}/.shellkit-workspace" ]] && { ( cd "$${dir}"; pwd ); break; }; done )
 DockertestDir := $(realpath $(kitdir)/../docker-test/bin)
 DockertestRun := SHK_WORKAREA=$(kitdir) $(DockertestDir)/docker-test.sh

@@ -44,6 +44,7 @@ shellkit_loader() {
         echo "$(date '+%Y-%m-%dT%H:%M:%S.%3N%z') Load start file=${initfile}" >>"${__shkit_loader_logfile}"
         source "$initfile"
     done
+    echo "$(date '+%Y-%m-%dT%H:%M:%S.%3N%z') Kit load done" >>"${__shkit_loader_logfile}"
     builtin cd "${orgDir}" || return
 }
 

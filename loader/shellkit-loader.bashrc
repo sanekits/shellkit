@@ -37,14 +37,14 @@ shellkit_loader() {
     loaderScript=${loaderDir}/shellkit-loader.sh
     echo > "${__shkit_loader_logfile}"
 
-    builtin pushd "$loaderDir" || return
+    builtin pushd "$loaderDir" >/dev/null || return
     for initfile in $(SHLOADER_DIR="$loaderDir" ${loaderScript}); do
         echo "$(date '+%Y-%m-%dT%H:%M:%S.%3N%z') Load start file=${initfile}" >>"${__shkit_loader_logfile}"
         #shellcheck disable=1090
         source "$initfile"
     done
     echo "$(date '+%Y-%m-%dT%H:%M:%S.%3N%z') Kit load done" >>"${__shkit_loader_logfile}"
-    builtin popd || return
+    builtin popd >/dev/null || return
 }
 
 [[ -z ${SHELLKIT_LOAD_DISABLE:-} ]] && {

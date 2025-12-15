@@ -9,7 +9,7 @@
 #
 #  Normally this file is installed by shellkit automatically.
 
-export SHELLKIT_LOADER_VER=5
+export SHELLKIT_LOADER_VER=6
 
 shellkit_loader() {
     # Load all shellkit init files (e.g. ~/.local/bin/<kit>/<kit>.bashrc),
@@ -22,26 +22,25 @@ shellkit_loader() {
             loaderDir=${HOME}/.local/bin
         else
             builtin echo "ERROR: can't find shellkit-loader.sh" >&2
-            return;
+            return
         fi
     fi
     case ":${PATH}:" in
-        *:"${HOME}/.local/bin":*)
-            ;;
-        *)
-            PATH=${HOME}/.local/bin:$PATH
-            ;;
+    *:"${HOME}/.local/bin":*) ;;
+    *)
+        PATH=${HOME}/.local/bin:$PATH
+        ;;
     esac
     local initfile
     local loaderScript
     loaderScript=${loaderDir}/shellkit-loader.sh
-    local orgDir=$PWD
-    builtin cd "$loaderDir"  || return
-    for initfile in $( SHLOADER_DIR="$loaderDir" ${loaderScript} ); do
+
+    builtin pushd "$loaderDir" || return
+    for initfile in $(SHLOADER_DIR="$loaderDir" ${loaderScript}); do
         #shellcheck disable=1090
         source "$initfile"
     done
-    builtin cd "${orgDir}" || return
+    builtin popd || return
 }
 
 [[ -z ${SHELLKIT_LOAD_DISABLE:-} ]] && {

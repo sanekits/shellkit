@@ -10,6 +10,7 @@
 #  Normally this file is installed by shellkit automatically.
 
 export SHELLKIT_LOADER_VER=6
+export __shkit_loader_logfile="${TMPDIR:-/tmp}/shellkit-loader.log"
 
 shellkit_loader() {
     # Load all shellkit init files (e.g. ~/.local/bin/<kit>/<kit>.bashrc),
@@ -34,12 +35,15 @@ shellkit_loader() {
     local initfile
     local loaderScript
     loaderScript=${loaderDir}/shellkit-loader.sh
+    echo > "${__shkit_loader_logfile}"
 
     builtin pushd "$loaderDir" || return
     for initfile in $(SHLOADER_DIR="$loaderDir" ${loaderScript}); do
+        echo "$(date '+%Y-%m-%dT%H:%M:%S.%3N%z') Load start file=${initfile}" >>"${__shkit_loader_logfile}"
         #shellcheck disable=1090
         source "$initfile"
     done
+    echo "$(date '+%Y-%m-%dT%H:%M:%S.%3N%z') Kit load done" >>"${__shkit_loader_logfile}"
     builtin popd || return
 }
 
